@@ -27,12 +27,6 @@ public class GocomicsParser : IComicsParser
 
     private readonly TimeSpan _defaultRequestDelay = TimeSpan.FromMilliseconds(300);
 
-    public GocomicsParser()
-    {
-        Directory.CreateDirectory(_peanutsFolder);
-        Directory.CreateDirectory(_peanutsBeginsFolder);
-    }
-
     public async IAsyncEnumerable<ParsedComic> ParseAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var comic in ParseComicsAsync(_peanutsUrl, _peanutsFolder,

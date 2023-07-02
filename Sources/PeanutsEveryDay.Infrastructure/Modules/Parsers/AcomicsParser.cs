@@ -27,12 +27,6 @@ public class AcomicsParser : IComicsParser
 
     private readonly TimeSpan _defaultRequestDelay = TimeSpan.FromMilliseconds(10);
 
-    public AcomicsParser()
-    {
-        Directory.CreateDirectory(_peanutsFolder);
-        Directory.CreateDirectory(_peanutsBeginsFolder);
-    }
-
     public async IAsyncEnumerable<ParsedComic> ParseAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var comic in ParseComicsAsync(_peanutsUrl, _peanutsFolder,
