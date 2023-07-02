@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PeanutsEveryDay.Domain\PeanutsEveryDay.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
