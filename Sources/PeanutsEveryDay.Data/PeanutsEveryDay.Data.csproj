@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PeanutsEveryDay.Abstraction\PeanutsEveryDay.Abstraction.csproj" />
+  </ItemGroup>
+
 </Project>
