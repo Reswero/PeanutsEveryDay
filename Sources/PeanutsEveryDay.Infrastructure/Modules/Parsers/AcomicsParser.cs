@@ -25,6 +25,8 @@ public class AcomicsParser : IComicsParser
     private const string _xpathToRootUrl = "//div[@class='description']//a";
     private const string _xpathToComicsNumber = "//span[@class='issueNumber']";
 
+    private readonly TimeSpan _defaultRequestDelay = TimeSpan.FromMilliseconds(10);
+
     public AcomicsParser()
     {
         Directory.CreateDirectory(_peanutsFolder);
@@ -59,6 +61,8 @@ public class AcomicsParser : IComicsParser
         int attemptsCount = default;
         int lastParsedComic = default;
 
+        TimeSpan requestDelay = _defaultRequestDelay;
+
         while (lastParsedComic < lastComicNumber)
         {
             var comicUrl = $"{baseUrl}{lastParsedComic + 1}";
@@ -81,18 +85,22 @@ public class AcomicsParser : IComicsParser
 
                 attemptsCount = default;
                 lastParsedComic++;
+                requestDelay = _defaultRequestDelay;
             }
             else
             {
                 if (attemptsCount < _maxAttemptsCount)
                 {
                     attemptsCount++;
+                    requestDelay = _defaultRequestDelay * Math.Pow(attemptsCount, 2);
                 }
                 else
                 {
                     throw new AttemptsExceededException();
                 }
             }
+
+            await Task.Delay(requestDelay, cancellationToken);
         }
     }
 
