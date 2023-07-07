@@ -3,6 +3,7 @@ using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Application.Exceptions;
 using PeanutsEveryDay.Application.Modules.Parsers;
 using PeanutsEveryDay.Application.Modules.Parsers.Models;
+using PeanutsEveryDay.Domain.Models;
 using System.Net;
 using System.Runtime.CompilerServices;
 
@@ -26,6 +27,13 @@ public class AcomicsParser : IComicsParser
     private const string _xpathToComicsNumber = "//span[@class='issueNumber']";
 
     private readonly TimeSpan _defaultRequestDelay = TimeSpan.FromMilliseconds(10);
+
+    private readonly ParserState _state;
+
+    public AcomicsParser(ParserState state)
+    {
+        _state = state;
+    }
 
     public async IAsyncEnumerable<ParsedComic> ParseAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -53,7 +61,7 @@ public class AcomicsParser : IComicsParser
         using HttpClient client = new();
 
         int attemptsCount = default;
-        int lastParsedComic = default;
+        int lastParsedComic = begins is true ? _state.LastParsedAcomicsBegins : _state.LastParsedAcomics;
 
         TimeSpan requestDelay = _defaultRequestDelay;
 
@@ -75,11 +83,13 @@ public class AcomicsParser : IComicsParser
 
                 var sourceType = begins is true ? SourceType.AcomicsBegins : SourceType.Acomics;
 
-                yield return new ParsedComic(date, sourceType, comicUrl, imagePath, stream);
-
                 attemptsCount = default;
                 lastParsedComic++;
                 requestDelay = _defaultRequestDelay;
+
+                _state.ChangeAcomics(lastParsedComic, begins);
+
+                yield return new ParsedComic(date, sourceType, comicUrl, imagePath, stream);
             }
             else
             {

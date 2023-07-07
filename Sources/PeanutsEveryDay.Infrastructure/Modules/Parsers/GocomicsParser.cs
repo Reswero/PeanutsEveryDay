@@ -5,6 +5,7 @@ using PeanutsEveryDay.Application.Modules.Parsers.Models;
 using PeanutsEveryDay.Application.Modules.Parsers;
 using System.Net;
 using System.Runtime.CompilerServices;
+using PeanutsEveryDay.Domain.Models;
 
 namespace PeanutsEveryDay.Infrastructure.Modules.Parsers;
 
@@ -26,6 +27,13 @@ public class GocomicsParser : IComicsParser
         = "//a[@title='Peanuts Begins']/picture[@class='item-comic-image']/img";
 
     private readonly TimeSpan _defaultRequestDelay = TimeSpan.FromMilliseconds(300);
+
+    private readonly ParserState _state;
+
+    public GocomicsParser(ParserState state)
+    {
+        _state = state;
+    }
 
     public async IAsyncEnumerable<ParsedComic> ParseAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -56,7 +64,7 @@ public class GocomicsParser : IComicsParser
         int attemptsCount = default;
         int skippedComics = default;
 
-        DateOnly lastParsedComic = new(1950, 10, 1);
+        DateOnly lastParsedComic = begins is true ? _state.LastParsedGocomicsBegins : _state.LastParsedGocomics;
         DateOnly currentComic = lastParsedComic;
 
         TimeSpan requestDelay = _defaultRequestDelay;
@@ -90,12 +98,14 @@ public class GocomicsParser : IComicsParser
                 {
                     var sourceType = begins is true ? SourceType.GocomicsBegins : SourceType.Gocomics;
 
-                    yield return new ParsedComic(currentComic, sourceType, comicUrl, imagePath, stream);
-
                     attemptsCount = default;
                     skippedComics = default;
                     lastParsedComic = currentComic;
                     requestDelay = _defaultRequestDelay;
+
+                    _state.ChangeGocomics(lastParsedComic, begins);
+
+                    yield return new ParsedComic(currentComic, sourceType, comicUrl, imagePath, stream);
                 }
             }
             else if (status.StatusCode == HttpStatusCode.Redirect)

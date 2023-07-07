@@ -1,4 +1,5 @@
 ﻿using PeanutsEveryDay.Abstraction;
+using PeanutsEveryDay.Domain.Models;
 using PeanutsEveryDay.Infrastructure.Modules.Parsers;
 
 namespace PeanutsEveryDay.Infrastructure.Tests;
@@ -9,7 +10,10 @@ public class GocomicsParserTests
     public async Task Peanuts_Comics_Parsed()
     {
         // Arrange
-        GocomicsParser parser = new();
+        ParserState state = new();
+        GocomicsParser parser = new(state);
+
+        var initComicDate = state.LastParsedGocomics;
 
         // Act
         var enumerator = parser.ParseAsync().GetAsyncEnumerator();
@@ -18,16 +22,20 @@ public class GocomicsParserTests
         var parsedComic = enumerator.Current;
 
         // Assert
-        Assert.True(parsedComic.Source == SourceType.Gocomics);
         Assert.NotNull(parsedComic.Url);
         Assert.NotNull(parsedComic.ImageStream);
+        Assert.True(parsedComic.Source == SourceType.Gocomics);
+        Assert.True(state.LastParsedGocomics.DayNumber - initComicDate.DayNumber == 1);
     }
 
     [Fact]
     public async Task PeanutsBegins_Comics_Parsed()
     {
         // Arrange
-        GocomicsParser parser = new();
+        ParserState state = new();
+        GocomicsParser parser = new(state);
+
+        var initComicDate = state.LastParsedGocomicsBegins;
 
         // Act
         var enumerator = parser.ParseBeginsAsync().GetAsyncEnumerator();
@@ -36,8 +44,9 @@ public class GocomicsParserTests
         var parsedComic = enumerator.Current;
 
         // Assert
-        Assert.True(parsedComic.Source == SourceType.GocomicsBegins);
         Assert.NotNull(parsedComic.Url);
         Assert.NotNull(parsedComic.ImageStream);
+        Assert.True(parsedComic.Source == SourceType.GocomicsBegins);
+        Assert.True(state.LastParsedGocomicsBegins.DayNumber - initComicDate.DayNumber == 1);
     }
 }
