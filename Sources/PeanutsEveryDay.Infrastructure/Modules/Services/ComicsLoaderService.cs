@@ -9,11 +9,14 @@ public class ComicsLoaderService : IComicsLoaderService
 {
     private readonly IComicsParser[] _parsers;
     private readonly IComicImageConverter _converter;
+    private readonly IComicFileSystemService _fileSystemService;
 
-    public ComicsLoaderService(IComicsParser[] parsers, IComicImageConverter converter)
+    public ComicsLoaderService(IComicsParser[] parsers, IComicImageConverter converter,
+        IComicFileSystemService fileSystemService)
     {
         _parsers = parsers;
         _converter = converter;
+        _fileSystemService = fileSystemService;
     }
 
     public async Task LoadAsync(CancellationToken cancellationToken = default)
@@ -36,6 +39,7 @@ public class ComicsLoaderService : IComicsLoaderService
         await foreach (var comic in comics)
         {
             await _converter.ConvertFromStripToSquareAsync(comic.ImageStream);
+            await _fileSystemService.SaveImage(comic.ImageStream, comic.PublicationDate, comic.Source);
         }
     }
 }
