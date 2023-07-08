@@ -2,6 +2,8 @@
 
 public class UserProgress
 {
-    public required long UserId { get; init; }
-    public required int TotalComicsWatched { get; init; }
+    public long UserId { get; init; }
+    public int TotalComicsWatched { get; init; }
+
+    public User? User { get; set; }
 }
