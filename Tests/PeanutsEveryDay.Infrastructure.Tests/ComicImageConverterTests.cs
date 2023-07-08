@@ -2,13 +2,13 @@
 
 namespace PeanutsEveryDay.Infrastructure.Tests;
 
-public class ComicConverterTests
+public class ComicImageConverterTests
 {
     [Fact]
     public async Task Image_ShouldBe_Resized()
     {
         // Arrange
-        ComicConverter converter = new();
+        ComicImageConverter converter = new();
 
         int border = 5;
 
@@ -31,7 +31,7 @@ public class ComicConverterTests
     public async Task Image_ShouldNotBe_Resized()
     {
         // Arrange
-        ComicConverter converter = new();
+        ComicImageConverter converter = new();
 
         Stream stream = new MemoryStream();
         Image<Rgba64> img = new(1200, 500);
