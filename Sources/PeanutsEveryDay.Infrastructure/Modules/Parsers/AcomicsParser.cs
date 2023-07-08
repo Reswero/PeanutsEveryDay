@@ -17,10 +17,6 @@ public class AcomicsParser : IComicsParser
     private const string _peanutsUrl = $"{_baseUrl}~peanuts/";
     private const string _peanutsBeginsUrl = $"{_baseUrl}~peanutsbegins/";
 
-    private const string _baseFolder = "comics/acomics/";
-    private const string _peanutsFolder = $"{_baseFolder}peanuts";
-    private const string _peanutsBeginsFolder = $"{_baseFolder}peanutsbegins";
-
     private const string _xpathToImage = "//img[@id='mainImage']";
     private const string _xpathToDate = "//span[@class='issueName']";
     private const string _xpathToRootUrl = "//div[@class='description']//a";
@@ -37,8 +33,7 @@ public class AcomicsParser : IComicsParser
 
     public async IAsyncEnumerable<ParsedComic> ParseAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var comic in ParseComicsAsync(_peanutsUrl, _peanutsFolder,
-            begins: false, cancellationToken))
+        await foreach (var comic in ParseComicsAsync(_peanutsUrl, begins: false, cancellationToken))
         {
             yield return comic;
         }
@@ -46,14 +41,13 @@ public class AcomicsParser : IComicsParser
 
     public async IAsyncEnumerable<ParsedComic> ParseBeginsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var comic in ParseComicsAsync(_peanutsBeginsUrl, _peanutsBeginsFolder,
-            begins: true, cancellationToken))
+        await foreach (var comic in ParseComicsAsync(_peanutsBeginsUrl, begins: true, cancellationToken))
         {
             yield return comic;
         }
     }
 
-    private async IAsyncEnumerable<ParsedComic> ParseComicsAsync(string baseUrl, string folder, bool begins,
+    private async IAsyncEnumerable<ParsedComic> ParseComicsAsync(string baseUrl, bool begins,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         int lastComicNumber = await GetLastComicNumberAsync(baseUrl, cancellationToken);
@@ -76,7 +70,6 @@ public class AcomicsParser : IComicsParser
                 var (date, src) = await GetPublicationDateAndSrcAsync(comicUrl, begins, cancellationToken);
 
                 string comicImageUrl = $"{_baseUrl}{src}";
-                string imagePath = $"{folder}/{date:yyyy_MM_dd}.png";
 
                 using HttpResponseMessage imageResponse = await client.GetAsync(comicImageUrl, cancellationToken);
                 using Stream stream = await imageResponse.Content.ReadAsStreamAsync(cancellationToken);
@@ -89,7 +82,7 @@ public class AcomicsParser : IComicsParser
 
                 _state.ChangeAcomics(lastParsedComic, begins);
 
-                yield return new ParsedComic(date, sourceType, comicUrl, imagePath, stream);
+                yield return new ParsedComic(date, sourceType, comicUrl, stream);
             }
             else
             {

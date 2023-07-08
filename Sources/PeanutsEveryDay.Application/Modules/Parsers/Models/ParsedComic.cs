@@ -6,5 +6,4 @@ public record ParsedComic(
     DateOnly PublicationDate,
     SourceType Source,
     string Url,
-    string ImagePath,
     Stream ImageStream);

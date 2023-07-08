@@ -2,7 +2,7 @@
 
 namespace PeanutsEveryDay.Infrastructure.Modules.Converters;
 
-public class ComicConverter : IComicImageConverter
+public class ComicImageConverter : IComicImageConverter
 {
     private const int _stripWidth = 1000;
     private const int _stripHeigth = 200;
