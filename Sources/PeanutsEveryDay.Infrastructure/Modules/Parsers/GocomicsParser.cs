@@ -17,9 +17,6 @@ public class GocomicsParser : IComicsParser
     private const string _baseUrl = "https://www.gocomics.com/";
     private const string _peanutsUrl = $"{_baseUrl}peanuts/";
     private const string _peanutsBeginsUrl = $"{_baseUrl}peanuts-begins/";
-    private const string _baseFolder = "comics/gocomics/";
-    private const string _peanutsFolder = $"{_baseFolder}peanuts";
-    private const string _peanutsBeginsFolder = $"{_baseFolder}peanutsbegins";
 
     private const string _xpathToPeanutsImg
         = "//a[@title='Peanuts']/picture[@class='item-comic-image']/img";
@@ -37,8 +34,7 @@ public class GocomicsParser : IComicsParser
 
     public async IAsyncEnumerable<ParsedComic> ParseAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var comic in ParseComicsAsync(_peanutsUrl, _peanutsFolder,
-            _xpathToPeanutsImg, begins: false, cancellationToken))
+        await foreach (var comic in ParseComicsAsync(_peanutsUrl, _xpathToPeanutsImg, begins: false, cancellationToken))
         {
             yield return comic;
         }
@@ -46,15 +42,14 @@ public class GocomicsParser : IComicsParser
 
     public async IAsyncEnumerable<ParsedComic> ParseBeginsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var comic in ParseComicsAsync(_peanutsBeginsUrl, _peanutsBeginsFolder,
-            _xpathToPeanutsBeginsImg, begins: true, cancellationToken))
+        await foreach (var comic in ParseComicsAsync(_peanutsBeginsUrl, _xpathToPeanutsBeginsImg, begins: true, cancellationToken))
         {
             yield return comic;
         }
     }
 
-    private async IAsyncEnumerable<ParsedComic> ParseComicsAsync(string baseUrl, string folder,
-        string xpathToImg, bool begins, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<ParsedComic> ParseComicsAsync(string baseUrl, string xpathToImg, bool begins,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         DateOnly lastComicDate = DateOnly.FromDateTime(DateTime.Now);
 
@@ -88,8 +83,6 @@ public class GocomicsParser : IComicsParser
                     .Attributes["src"]
                     .Value;
 
-                string imagePath = $"{folder}/{currentComic:yyyy_MM_dd}.png";
-
                 using HttpResponseMessage response = await client.GetAsync(comicImageSrc, cancellationToken);
                 using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
 
@@ -105,7 +98,7 @@ public class GocomicsParser : IComicsParser
 
                     _state.ChangeGocomics(lastParsedComic, begins);
 
-                    yield return new ParsedComic(currentComic, sourceType, comicUrl, imagePath, stream);
+                    yield return new ParsedComic(currentComic, sourceType, comicUrl, stream);
                 }
             }
             else if (status.StatusCode == HttpStatusCode.Redirect)
