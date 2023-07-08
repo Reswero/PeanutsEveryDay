@@ -1,6 +1,6 @@
 using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Data.Models;
-using PeanutsEveryDay.Data.Tests.Utils;
+using PeanutsEveryDay.Tests.Utils;
 
 namespace PeanutsEveryDay.Data.Tests;
 
@@ -10,8 +10,7 @@ public class PeanutsContextTests
 
     public PeanutsContextTests()
     {
-        int seed = Random.Shared.Next(1, 100_000);
-        _db = DbUtils.CreateContext(seed);
+        _db = DbUtils.CreateContext();
         DbUtils.CreateDatabase(_db);
     }
 

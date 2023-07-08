@@ -1,11 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PeanutsEveryDay.Data;
 
-namespace PeanutsEveryDay.Data.Tests.Utils;
+namespace PeanutsEveryDay.Tests.Utils;
 
 public static class DbUtils
 {
-    public static PeanutsContext CreateContext(int seed)
+    public static PeanutsContext CreateContext(int? seed = null)
     {
+        seed ??= Random.Shared.Next(1, 1_000_000);
+
         DbContextOptions<PeanutsContext> options =
             new DbContextOptionsBuilder<PeanutsContext>()
                 .UseNpgsql($"Host=localhost;Port=5432;Database=peanuts_tests_{seed};Username=postgres;Password=root")
