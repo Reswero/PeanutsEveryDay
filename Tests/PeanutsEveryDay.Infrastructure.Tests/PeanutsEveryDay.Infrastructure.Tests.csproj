@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Sources\PeanutsEveryDay.Infrastructure\PeanutsEveryDay.Infrastructure.csproj" />
+    <ProjectReference Include="..\PeanutsEveryDay.Tests\PeanutsEveryDay.Tests.csproj" />
   </ItemGroup>
 
 </Project>

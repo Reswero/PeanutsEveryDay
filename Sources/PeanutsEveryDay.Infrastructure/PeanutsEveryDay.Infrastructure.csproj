@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PeanutsEveryDay.Application\PeanutsEveryDay.Application.csproj" />
+    <ProjectReference Include="..\PeanutsEveryDay.Data\PeanutsEveryDay.Data.csproj" />
   </ItemGroup>
 
 </Project>
