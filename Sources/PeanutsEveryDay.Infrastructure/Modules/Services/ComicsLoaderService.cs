@@ -18,12 +18,12 @@ public class ComicsLoaderService : IComicsLoaderService
     private readonly IComicsRepository _repository;
     private readonly IParserStateRepository _stateRepository;
 
-    public ComicsLoaderService(ILogger<ComicsLoaderService> logger, IComicsParser[] parsers,
+    public ComicsLoaderService(ILogger<ComicsLoaderService> logger, IEnumerable<IComicsParser> parsers,
         IComicImageConverter converter, IComicFileSystemService fileSystemService,
         IComicsRepository repository, IParserStateRepository stateRepository)
     {
         _logger = logger;
-        _parsers = parsers;
+        _parsers = parsers.ToArray();
         _converter = converter;
         _fileSystemService = fileSystemService;
         _repository = repository;
@@ -69,21 +69,28 @@ public class ComicsLoaderService : IComicsLoaderService
 
     private async Task LoadComics(IAsyncEnumerable<ParsedComic> comics)
     {
-        await foreach (var parsedComic in comics)
+        try
         {
-            var imgStream = await _converter.ConvertFromStripToSquareAsync(parsedComic.ImageStream);
-            await _fileSystemService.SaveImage(imgStream, parsedComic.PublicationDate, parsedComic.Source);
-
-            Comic comic = new()
+            await foreach (var parsedComic in comics)
             {
-                PublicationDate = parsedComic.PublicationDate,
-                Source = parsedComic.Source,
-                Url = parsedComic.Url
-            };
-            await _repository.AddAsync(comic);
+                var imgStream = await _converter.ConvertFromStripToSquareAsync(parsedComic.ImageStream);
+                await _fileSystemService.SaveImage(imgStream, parsedComic.PublicationDate, parsedComic.Source);
 
-            _logger.LogTrace("Comic parsed (pubDate='{PublicationDate}', src={Source}, url='{Url}').",
-                comic.PublicationDate, comic.Source, comic.Url);
+                Comic comic = new()
+                {
+                    PublicationDate = parsedComic.PublicationDate,
+                    Source = parsedComic.Source,
+                    Url = parsedComic.Url
+                };
+                await _repository.AddAsync(comic);
+
+                _logger.LogTrace("Comic parsed (pubDate='{PublicationDate}', src={Source}, url='{Url}').",
+                    comic.PublicationDate, comic.Source, comic.Url);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Parser exception occured. {Error}", ex.Message);
         }
     }
 }
