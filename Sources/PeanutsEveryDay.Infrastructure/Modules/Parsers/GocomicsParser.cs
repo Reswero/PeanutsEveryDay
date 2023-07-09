@@ -25,9 +25,9 @@ public class GocomicsParser : IComicsParser
 
     private readonly TimeSpan _defaultRequestDelay = TimeSpan.FromMilliseconds(300);
 
-    private readonly ParserState _state;
+    private ParserState _state = new();
 
-    public GocomicsParser(ParserState state)
+    public void SetState(ParserState state)
     {
         _state = state;
     }

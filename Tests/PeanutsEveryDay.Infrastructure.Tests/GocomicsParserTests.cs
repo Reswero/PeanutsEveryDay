@@ -11,7 +11,8 @@ public class GocomicsParserTests
     {
         // Arrange
         ParserState state = new();
-        GocomicsParser parser = new(state);
+        GocomicsParser parser = new();
+        parser.SetState(state);
 
         var initComicDate = state.LastParsedGocomics;
 
@@ -33,7 +34,8 @@ public class GocomicsParserTests
     {
         // Arrange
         ParserState state = new();
-        GocomicsParser parser = new(state);
+        GocomicsParser parser = new();
+        parser.SetState(state);
 
         var initComicDate = state.LastParsedGocomicsBegins;
 

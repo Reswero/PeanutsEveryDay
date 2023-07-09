@@ -1,4 +1,5 @@
 ﻿using PeanutsEveryDay.Application.Modules.Parsers.Models;
+using PeanutsEveryDay.Domain.Models;
 
 namespace PeanutsEveryDay.Application.Modules.Parsers;
 
@@ -7,6 +8,11 @@ namespace PeanutsEveryDay.Application.Modules.Parsers;
 /// </summary>
 public interface IComicsParser
 {
+    /// <summary>
+    /// Sets parser state
+    /// </summary>
+    /// <param name="state">Parser state</param>
+    public void SetState(ParserState state);
     /// <summary>
     /// Parsing Peanuts comics
     /// </summary>

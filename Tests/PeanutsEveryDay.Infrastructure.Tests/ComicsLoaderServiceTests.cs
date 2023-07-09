@@ -1,9 +1,9 @@
-﻿using PeanutsEveryDay.Application.Modules.Converters;
+﻿using Microsoft.Extensions.Logging;
+using PeanutsEveryDay.Application.Modules.Converters;
 using PeanutsEveryDay.Application.Modules.Parsers;
 using PeanutsEveryDay.Application.Modules.Repositories;
 using PeanutsEveryDay.Application.Modules.Services;
 using PeanutsEveryDay.Data;
-using PeanutsEveryDay.Domain.Models;
 using PeanutsEveryDay.Infrastructure.Modules.Converters;
 using PeanutsEveryDay.Infrastructure.Modules.Parsers;
 using PeanutsEveryDay.Infrastructure.Modules.Repositories;
@@ -34,26 +34,23 @@ public class ComicsLoaderServiceTests
     public async Task Comics_Loaded()
     {
         // Arrange
-        ParserState state = new();
+        var logFactory = LoggerFactory.Create(cfg => cfg.SetMinimumLevel(LogLevel.Trace));
+        ILogger<ComicsLoaderService> logger = logFactory.CreateLogger<ComicsLoaderService>();
 
-        IComicsParser acomics = new AcomicsParser(state);
+        IComicsParser acomics = new AcomicsParser();
         IComicImageConverter converter = new ComicImageConverter();
         IComicFileSystemService fsService = new ComicFileSystemService();
         IComicsRepository repository = new ComicsRepository(_db);
+        IParserStateRepository stateRepository = new ParserStateRepository(_db);
 
-        ComicsLoaderService service = new(new[] { acomics }, converter, fsService, repository);
-
-        CancellationTokenSource cts = new();
+        ComicsLoaderService service = new(logger, new[] { acomics }, converter, fsService, repository, stateRepository);
 
         // Act
-        // Not optimal solution. Maybe should change IComicsParser to Mock realisation
-        Task.Run(async () => await service.LoadAsync(cts.Token));
-        await Task.Delay(5000);
-        cts.Cancel();
+        await service.LoadAsync(TimeSpan.FromSeconds(5));
 
         // Assert
-        Assert.True(state.LastParsedAcomics > 0);
-        Assert.True(state.LastParsedAcomicsBegins > 0);
+        Assert.True(_db.ParserStates.Single().LastParsedAcomics > 0);
+        Assert.True(_db.ParserStates.Single().LastParsedAcomicsBegins > 0);
         Assert.True(Directory.Exists(_comicsFolderPath));
     }
 }

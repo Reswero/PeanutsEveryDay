@@ -24,9 +24,9 @@ public class AcomicsParser : IComicsParser
 
     private readonly TimeSpan _defaultRequestDelay = TimeSpan.FromMilliseconds(10);
 
-    private readonly ParserState _state;
+    private ParserState _state = new();
 
-    public AcomicsParser(ParserState state)
+    public void SetState(ParserState state)
     {
         _state = state;
     }
