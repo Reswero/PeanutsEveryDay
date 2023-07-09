@@ -3,7 +3,6 @@ using PeanutsEveryDay.Application.Modules.Parsers;
 using PeanutsEveryDay.Application.Modules.Repositories;
 using PeanutsEveryDay.Application.Modules.Services;
 using PeanutsEveryDay.Data;
-using PeanutsEveryDay.Domain.Models;
 using PeanutsEveryDay.Infrastructure.Modules.Converters;
 using PeanutsEveryDay.Infrastructure.Modules.Parsers;
 using PeanutsEveryDay.Infrastructure.Modules.Repositories;
@@ -34,14 +33,13 @@ public class ComicsLoaderServiceTests
     public async Task Comics_Loaded()
     {
         // Arrange
-        ParserState state = new();
-
-        IComicsParser acomics = new AcomicsParser(state);
+        IComicsParser acomics = new AcomicsParser();
         IComicImageConverter converter = new ComicImageConverter();
         IComicFileSystemService fsService = new ComicFileSystemService();
         IComicsRepository repository = new ComicsRepository(_db);
+        IParserStateRepository stateRepository = new ParserStateRepository(_db);
 
-        ComicsLoaderService service = new(new[] { acomics }, converter, fsService, repository);
+        ComicsLoaderService service = new(new[] { acomics }, converter, fsService, repository, stateRepository);
 
         CancellationTokenSource cts = new();
 
@@ -50,10 +48,11 @@ public class ComicsLoaderServiceTests
         Task.Run(async () => await service.LoadAsync(cts.Token));
         await Task.Delay(5000);
         cts.Cancel();
+        await Task.Delay(500);
 
         // Assert
-        Assert.True(state.LastParsedAcomics > 0);
-        Assert.True(state.LastParsedAcomicsBegins > 0);
+        Assert.True(_db.ParserStates.Single().LastParsedAcomics > 0);
+        Assert.True(_db.ParserStates.Single().LastParsedAcomicsBegins > 0);
         Assert.True(Directory.Exists(_comicsFolderPath));
     }
 }

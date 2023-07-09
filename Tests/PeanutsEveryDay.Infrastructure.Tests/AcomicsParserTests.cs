@@ -11,7 +11,8 @@ public class AcomicsParserTests
     {
         // Arrange
         ParserState state = new();
-        AcomicsParser parser = new(state);
+        AcomicsParser parser = new();
+        parser.SetState(state);
 
         var initComicNumber = state.LastParsedAcomics;
 
@@ -33,7 +34,8 @@ public class AcomicsParserTests
     {
         // Arrange
         ParserState state = new();
-        AcomicsParser parser = new(state);
+        AcomicsParser parser = new();
+        parser.SetState(state);
 
         var initComicNumber = state.LastParsedAcomicsBegins;
 

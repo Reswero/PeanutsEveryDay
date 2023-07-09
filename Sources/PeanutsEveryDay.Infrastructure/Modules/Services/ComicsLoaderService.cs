@@ -13,29 +13,43 @@ public class ComicsLoaderService : IComicsLoaderService
     private readonly IComicImageConverter _converter;
     private readonly IComicFileSystemService _fileSystemService;
     private readonly IComicsRepository _repository;
+    private readonly IParserStateRepository _stateRepository;
 
     public ComicsLoaderService(IComicsParser[] parsers, IComicImageConverter converter,
-        IComicFileSystemService fileSystemService, IComicsRepository repository)
+        IComicFileSystemService fileSystemService, IComicsRepository repository,
+        IParserStateRepository stateRepository)
     {
         _parsers = parsers;
         _converter = converter;
         _fileSystemService = fileSystemService;
         _repository = repository;
+        _stateRepository = stateRepository;
     }
 
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
+        var state = await _stateRepository.GetAsync(cancellationToken);
+
         List<Task> loadTasks = new(_parsers.Length * 2);
         foreach (var parser in _parsers)
         {
-            var comicsTask = Task.Run(async () => await LoadComics(parser.ParseAsync(cancellationToken)), cancellationToken);
-            var beginsComicsTask = Task.Run(async () => await LoadComics(parser.ParseBeginsAsync(cancellationToken)), cancellationToken);
+            parser.SetState(state);
+
+            var comicsTask = Task.Run(async () => await LoadComics(parser.ParseAsync()));
+            var beginsComicsTask = Task.Run(async () => await LoadComics(parser.ParseBeginsAsync()));
 
             loadTasks.Add(comicsTask);
             loadTasks.Add(beginsComicsTask);
         }
 
-        Task.WaitAll(loadTasks.ToArray(), cancellationToken);
+        try
+        {
+            Task.WaitAll(loadTasks.ToArray(), cancellationToken);
+        }
+        finally
+        {
+            await _stateRepository.AddOrUpdateAsync(state);
+        }
     }
 
     private async Task LoadComics(IAsyncEnumerable<ParsedComic> comics)
