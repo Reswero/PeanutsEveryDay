@@ -1,4 +1,5 @@
-﻿using PeanutsEveryDay.Application.Modules.Converters;
+﻿using Microsoft.Extensions.Logging;
+using PeanutsEveryDay.Application.Modules.Converters;
 using PeanutsEveryDay.Application.Modules.Parsers;
 using PeanutsEveryDay.Application.Modules.Parsers.Models;
 using PeanutsEveryDay.Application.Modules.Repositories;
@@ -9,16 +10,19 @@ namespace PeanutsEveryDay.Infrastructure.Modules.Services;
 
 public class ComicsLoaderService : IComicsLoaderService
 {
+    private readonly ILogger<ComicsLoaderService> _logger;
+
     private readonly IComicsParser[] _parsers;
     private readonly IComicImageConverter _converter;
     private readonly IComicFileSystemService _fileSystemService;
     private readonly IComicsRepository _repository;
     private readonly IParserStateRepository _stateRepository;
 
-    public ComicsLoaderService(IComicsParser[] parsers, IComicImageConverter converter,
-        IComicFileSystemService fileSystemService, IComicsRepository repository,
-        IParserStateRepository stateRepository)
+    public ComicsLoaderService(ILogger<ComicsLoaderService> logger, IComicsParser[] parsers,
+        IComicImageConverter converter, IComicFileSystemService fileSystemService,
+        IComicsRepository repository, IParserStateRepository stateRepository)
     {
+        _logger = logger;
         _parsers = parsers;
         _converter = converter;
         _fileSystemService = fileSystemService;
@@ -30,6 +34,10 @@ public class ComicsLoaderService : IComicsLoaderService
     {
         var state = await _stateRepository.GetAsync(cancellationToken);
 
+        _logger.LogInformation("Parser state loaded (acomics='{acomics}', acomicsBegins='{acomicsBegins}', " +
+            "gocomics='{gocomics}', gocomicsBegins='{gocomicsBegins}').",
+            state.LastParsedAcomics, state.LastParsedAcomicsBegins, state.LastParsedGocomics, state.LastParsedGocomicsBegins);
+
         List<Task> loadTasks = new(_parsers.Length * 2);
         foreach (var parser in _parsers)
         {
@@ -40,6 +48,8 @@ public class ComicsLoaderService : IComicsLoaderService
 
             loadTasks.Add(comicsTask);
             loadTasks.Add(beginsComicsTask);
+
+            _logger.LogInformation("Parser {Name} starts working.", parser.GetType().Name);
         }
 
         try
@@ -50,6 +60,10 @@ public class ComicsLoaderService : IComicsLoaderService
         finally
         {
             await _stateRepository.AddOrUpdateAsync(state, cancellationToken);
+
+            _logger.LogInformation("Parser state saved (acomics='{acomics}', acomicsBegins='{acomicsBegins}', " +
+                "gocomics='{gocomics}', gocomicsBegins='{gocomicsBegins}').",
+                state.LastParsedAcomics, state.LastParsedAcomicsBegins, state.LastParsedGocomics, state.LastParsedGocomicsBegins);
         }
     }
 
@@ -67,6 +81,9 @@ public class ComicsLoaderService : IComicsLoaderService
                 Url = parsedComic.Url
             };
             await _repository.AddAsync(comic);
+
+            _logger.LogTrace("Comic parsed (pubDate='{PublicationDate}', src={Source}, url='{Url}').",
+                comic.PublicationDate, comic.Source, comic.Url);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using PeanutsEveryDay.Application.Modules.Converters;
+﻿using Microsoft.Extensions.Logging;
+using PeanutsEveryDay.Application.Modules.Converters;
 using PeanutsEveryDay.Application.Modules.Parsers;
 using PeanutsEveryDay.Application.Modules.Repositories;
 using PeanutsEveryDay.Application.Modules.Services;
@@ -33,13 +34,16 @@ public class ComicsLoaderServiceTests
     public async Task Comics_Loaded()
     {
         // Arrange
+        var logFactory = LoggerFactory.Create(cfg => cfg.SetMinimumLevel(LogLevel.Trace));
+        ILogger<ComicsLoaderService> logger = logFactory.CreateLogger<ComicsLoaderService>();
+
         IComicsParser acomics = new AcomicsParser();
         IComicImageConverter converter = new ComicImageConverter();
         IComicFileSystemService fsService = new ComicFileSystemService();
         IComicsRepository repository = new ComicsRepository(_db);
         IParserStateRepository stateRepository = new ParserStateRepository(_db);
 
-        ComicsLoaderService service = new(new[] { acomics }, converter, fsService, repository, stateRepository);
+        ComicsLoaderService service = new(logger, new[] { acomics }, converter, fsService, repository, stateRepository);
 
         // Act
         await service.LoadAsync(TimeSpan.FromSeconds(5));
