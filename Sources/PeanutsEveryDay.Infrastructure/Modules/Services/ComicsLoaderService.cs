@@ -1,6 +1,7 @@
 ﻿using PeanutsEveryDay.Application.Modules.Converters;
 using PeanutsEveryDay.Application.Modules.Parsers;
 using PeanutsEveryDay.Application.Modules.Parsers.Models;
+using PeanutsEveryDay.Application.Modules.Repositories;
 using PeanutsEveryDay.Application.Modules.Services;
 using PeanutsEveryDay.Domain.Models;
 
@@ -27,8 +28,8 @@ public class ComicsLoaderService : IComicsLoaderService
         List<Task> loadTasks = new(_parsers.Length * 2);
         foreach (var parser in _parsers)
         {
-            var comicsTask = Task.Run(() => LoadComics(parser.ParseAsync(cancellationToken)), cancellationToken);
-            var beginsComicsTask = Task.Run(() => LoadComics(parser.ParseBeginsAsync(cancellationToken)), cancellationToken);
+            var comicsTask = Task.Run(async () => await LoadComics(parser.ParseAsync(cancellationToken)), cancellationToken);
+            var beginsComicsTask = Task.Run(async () => await LoadComics(parser.ParseBeginsAsync(cancellationToken)), cancellationToken);
 
             loadTasks.Add(comicsTask);
             loadTasks.Add(beginsComicsTask);
@@ -37,12 +38,12 @@ public class ComicsLoaderService : IComicsLoaderService
         Task.WaitAll(loadTasks.ToArray(), cancellationToken);
     }
 
-    private async void LoadComics(IAsyncEnumerable<ParsedComic> comics)
+    private async Task LoadComics(IAsyncEnumerable<ParsedComic> comics)
     {
         await foreach (var parsedComic in comics)
         {
-            await _converter.ConvertFromStripToSquareAsync(parsedComic.ImageStream);
-            await _fileSystemService.SaveImage(parsedComic.ImageStream, parsedComic.PublicationDate, parsedComic.Source);
+            var imgStream = await _converter.ConvertFromStripToSquareAsync(parsedComic.ImageStream);
+            await _fileSystemService.SaveImage(imgStream, parsedComic.PublicationDate, parsedComic.Source);
 
             Comic comic = new()
             {

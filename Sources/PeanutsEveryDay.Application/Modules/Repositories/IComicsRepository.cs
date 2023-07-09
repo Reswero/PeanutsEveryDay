@@ -1,6 +1,6 @@
 ﻿using PeanutsEveryDay.Domain.Models;
 
-namespace PeanutsEveryDay.Application.Modules.Services;
+namespace PeanutsEveryDay.Application.Modules.Repositories;
 
 public interface IComicsRepository
 {

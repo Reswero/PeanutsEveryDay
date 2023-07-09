@@ -7,23 +7,44 @@
 // But how to properly distinguish between different types of parser states I haven't figured out
 public class ParserState
 {
+    private int _lastParsedAcomics = 0;
+    private int _lastParsedAcomicsBegins = 0;
+    private DateOnly _lastParsedGocomics = new(1950, 10, 01);
+    private DateOnly _lastParsedGocomicsBegins = new(1950, 10, 01);
+
     /// <summary>
     /// Last parsed comic number from Acomics
     /// </summary>
-    public int LastParsedAcomics { get; private set; } = 0;
+    public int LastParsedAcomics
+    {
+        get => _lastParsedAcomics;
+        init => _lastParsedAcomics = value;
+    }
     /// <summary>
     /// Last parsed comic number from Acomics Begins
     /// </summary>
-    public int LastParsedAcomicsBegins { get; private set; } = 0;
+    public int LastParsedAcomicsBegins
+    {
+        get => _lastParsedAcomicsBegins;
+        init => _lastParsedAcomicsBegins = value;
+    }
 
     /// <summary>
     /// Last parsed comic date from Gocomics
     /// </summary>
-    public DateOnly LastParsedGocomics { get; private set; } = new(1950, 10, 1);
+    public DateOnly LastParsedGocomics
+    {
+        get => _lastParsedGocomics;
+        init => _lastParsedGocomics = value;
+    }
     /// <summary>
     /// Last parsed comic date from Gocomics Begins
     /// </summary>
-    public DateOnly LastParsedGocomicsBegins { get; private set; } = new(1950, 10, 1);
+    public DateOnly LastParsedGocomicsBegins
+    {
+        get => _lastParsedGocomicsBegins;
+        init => _lastParsedGocomicsBegins = value;
+    }
 
     /// <summary>
     /// Changing Acomics parser state
@@ -34,11 +55,11 @@ public class ParserState
     {
         if (fromBegins is true)
         {
-            LastParsedAcomicsBegins = lastParsedNumber;
+            _lastParsedAcomicsBegins = lastParsedNumber;
         }
         else
         {
-            LastParsedAcomics = lastParsedNumber;
+            _lastParsedAcomics = lastParsedNumber;
         }
     }
 
@@ -51,11 +72,11 @@ public class ParserState
     {
         if (fromBegins is true)
         {
-            LastParsedGocomicsBegins = lastParsedDate;
+            _lastParsedGocomicsBegins = lastParsedDate;
         }
         else
         {
-            LastParsedGocomics = lastParsedDate;
+            _lastParsedGocomics = lastParsedDate;
         }
     }
 }
