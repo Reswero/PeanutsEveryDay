@@ -1,7 +1,7 @@
 ﻿using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Data;
 using PeanutsEveryDay.Domain.Models;
-using PeanutsEveryDay.Infrastructure.Modules.Services;
+using PeanutsEveryDay.Infrastructure.Modules.Repositories;
 using PeanutsEveryDay.Tests.Utils;
 
 namespace PeanutsEveryDay.Infrastructure.Tests;

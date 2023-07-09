@@ -1,8 +1,8 @@
-﻿using PeanutsEveryDay.Application.Modules.Services;
+﻿using PeanutsEveryDay.Application.Modules.Repositories;
 using PeanutsEveryDay.Data;
 using PeanutsEveryDay.Domain.Models;
 
-namespace PeanutsEveryDay.Infrastructure.Modules.Services;
+namespace PeanutsEveryDay.Infrastructure.Modules.Repositories;
 
 public class ComicsRepository : IComicsRepository
 {

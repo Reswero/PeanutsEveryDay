@@ -26,4 +26,12 @@ public static class DbUtils
     {
         context.Database.EnsureDeleted();
     }
+
+    public static void ClearTracker(PeanutsContext context)
+    {
+        foreach (var entry in context.ChangeTracker.Entries())
+        {
+            entry.State = EntityState.Detached;
+        }
+    }
 }
