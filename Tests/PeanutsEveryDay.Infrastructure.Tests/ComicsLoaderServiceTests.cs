@@ -41,14 +41,8 @@ public class ComicsLoaderServiceTests
 
         ComicsLoaderService service = new(new[] { acomics }, converter, fsService, repository, stateRepository);
 
-        CancellationTokenSource cts = new();
-
         // Act
-        // Not optimal solution. Maybe should change IComicsParser to Mock realisation
-        Task.Run(async () => await service.LoadAsync(cts.Token));
-        await Task.Delay(5000);
-        cts.Cancel();
-        await Task.Delay(500);
+        await service.LoadAsync(TimeSpan.FromSeconds(5));
 
         // Assert
         Assert.True(_db.ParserStates.Single().LastParsedAcomics > 0);

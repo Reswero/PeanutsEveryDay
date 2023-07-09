@@ -26,7 +26,7 @@ public class ComicsLoaderService : IComicsLoaderService
         _stateRepository = stateRepository;
     }
 
-    public async Task LoadAsync(CancellationToken cancellationToken = default)
+    public async Task LoadAsync(TimeSpan? executionDuration = null, CancellationToken cancellationToken = default)
     {
         var state = await _stateRepository.GetAsync(cancellationToken);
 
@@ -35,8 +35,8 @@ public class ComicsLoaderService : IComicsLoaderService
         {
             parser.SetState(state);
 
-            var comicsTask = Task.Run(async () => await LoadComics(parser.ParseAsync()));
-            var beginsComicsTask = Task.Run(async () => await LoadComics(parser.ParseBeginsAsync()));
+            var comicsTask = Task.Run(async () => await LoadComics(parser.ParseAsync(cancellationToken)), cancellationToken);
+            var beginsComicsTask = Task.Run(async () => await LoadComics(parser.ParseBeginsAsync(cancellationToken)), cancellationToken);
 
             loadTasks.Add(comicsTask);
             loadTasks.Add(beginsComicsTask);
@@ -44,11 +44,12 @@ public class ComicsLoaderService : IComicsLoaderService
 
         try
         {
-            Task.WaitAll(loadTasks.ToArray(), cancellationToken);
+            var timeout = executionDuration is null ? -1 : (int)executionDuration.Value.TotalMilliseconds;
+            Task.WaitAll(loadTasks.ToArray(), timeout, cancellationToken);
         }
         finally
         {
-            await _stateRepository.AddOrUpdateAsync(state);
+            await _stateRepository.AddOrUpdateAsync(state, cancellationToken);
         }
     }
 
