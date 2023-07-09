@@ -18,9 +18,9 @@ public class ComicImageConverterTests
         stream.Seek(0, SeekOrigin.Begin);
 
         // Act
-        await converter.ConvertFromStripToSquareAsync(stream);
+        var imgStream = await converter.ConvertFromStripToSquareAsync(stream);
 
-        Image converterdImg = Image.Load(stream);
+        Image converterdImg = Image.Load(imgStream);
 
         // Assert
         Assert.True(converterdImg.Width == 500 + border * 2);
@@ -39,9 +39,9 @@ public class ComicImageConverterTests
         stream.Seek(0, SeekOrigin.Begin);
 
         // Act
-        await converter.ConvertFromStripToSquareAsync(stream);
+        var imgStream = await converter.ConvertFromStripToSquareAsync(stream);
 
-        Image converterdImg = Image.Load(stream);
+        Image converterdImg = Image.Load(imgStream);
 
         // Assert
         Assert.True(converterdImg.Width == img.Width);

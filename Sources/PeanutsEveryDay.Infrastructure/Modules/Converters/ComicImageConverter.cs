@@ -16,16 +16,16 @@ public class ComicImageConverter : IComicImageConverter
 
     private const float _opacity = 1f;
 
-    public async Task ConvertFromStripToSquareAsync(Stream stream, CancellationToken cancellationToken = default)
+    public async Task<Stream> ConvertFromStripToSquareAsync(Stream stream, CancellationToken cancellationToken = default)
     {
         using Image strip = await Image.LoadAsync(stream, cancellationToken);
-        stream.Seek(0, SeekOrigin.Begin);
+        MemoryStream ms = new();
 
         if (strip.Height > _maxStripHeight)
         {
-            await strip.SaveAsPngAsync(stream, cancellationToken);
-            stream.Seek(0, SeekOrigin.Begin);
-            return;
+            await strip.SaveAsPngAsync(ms, cancellationToken);
+            ms.Seek(0, SeekOrigin.Begin);
+            return ms;
         }
 
         strip.Mutate(i => i.Resize(_stripWidth, _stripHeigth));
@@ -46,7 +46,8 @@ public class ComicImageConverter : IComicImageConverter
             i.DrawImage(bottomPart, new Point(_partOffset + _border, _partHeight + _border * 3), _opacity);
         });
 
-        await square.SaveAsPngAsync(stream, cancellationToken);
-        stream.Seek(0, SeekOrigin.Begin);
+        await square.SaveAsPngAsync(ms, cancellationToken);
+        ms.Seek(0, SeekOrigin.Begin);
+        return ms;
     }
 }

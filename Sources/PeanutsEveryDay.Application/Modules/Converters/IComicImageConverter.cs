@@ -6,8 +6,8 @@
 public interface IComicImageConverter
 {
     /// <summary>
-    /// Converts strip comic to square. Writes result in a passed stream
+    /// Converts strip comic to square
     /// </summary>
     /// <param name="stream">Image stream</param>
-    public Task ConvertFromStripToSquareAsync(Stream stream, CancellationToken cancellationToken = default);
+    public Task<Stream> ConvertFromStripToSquareAsync(Stream stream, CancellationToken cancellationToken = default);
 }
