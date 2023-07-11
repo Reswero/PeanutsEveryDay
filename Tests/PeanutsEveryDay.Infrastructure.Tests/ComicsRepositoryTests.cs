@@ -12,8 +12,7 @@ public class ComicsRepositoryTests
 
     public ComicsRepositoryTests()
     {
-        int seed = Random.Shared.Next(1, 100_000);
-        _db = DbUtils.CreateContext(seed);
+        _db = DbUtils.CreateContext();
         DbUtils.CreateDatabase(_db);
     }
 
@@ -42,5 +41,32 @@ public class ComicsRepositoryTests
         // Assert
         Assert.Single(_db.Comics.ToList());
         Assert.Equal(comic.PublicationDate, _db.Comics.Single().PublicationDate);
+    }
+
+    [Fact]
+    public async Task ComicRange_Added()
+    {
+        // Arrange
+        ComicsRepository repository = new(_db);
+
+        Comic comic1 = new()
+        {
+            PublicationDate = new DateOnly(2023, 01, 01),
+            Source = SourceType.Acomics,
+            Url = "example.com"
+        };
+        Comic comic2 = new()
+        {
+            PublicationDate = new DateOnly(2023, 01, 01),
+            Source = SourceType.Gocomics,
+            Url = "example.com"
+        };
+        List<Comic> comics = new(new[] { comic1, comic2 });
+
+        // Act
+        await repository.AddRangeAsync(comics);
+
+        // Assert
+        Assert.Equal(comics.Count, _db.Comics.Count());
     }
 }

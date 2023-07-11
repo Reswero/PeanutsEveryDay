@@ -15,14 +15,27 @@ public class ComicsRepository : IComicsRepository
 
     public async Task AddAsync(Comic comic, CancellationToken cancellationToken = default)
     {
-        Data.Models.Comic comicDb = new()
+        var comicDb = CreateEntry(comic);
+
+        await _db.AddAsync(comicDb, cancellationToken);
+        await _db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task AddRangeAsync(IReadOnlyCollection<Comic> comics, CancellationToken cancellationToken = default)
+    {
+        var comicsDb = comics.Select(CreateEntry).ToList();
+
+        await _db.AddRangeAsync(comicsDb, cancellationToken);
+        await _db.SaveChangesAsync(cancellationToken);
+    }
+
+    private Data.Models.Comic CreateEntry(Comic comic)
+    {
+        return new()
         {
             PublicationDate = comic.PublicationDate,
             Source = comic.Source,
             Url = comic.Url
         };
-
-        await _db.AddAsync(comicDb, cancellationToken);
-        await _db.SaveChangesAsync(cancellationToken);
     }
 }
