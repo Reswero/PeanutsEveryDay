@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Application.Modules.Converters;
 using PeanutsEveryDay.Application.Modules.Parsers;
 using PeanutsEveryDay.Application.Modules.Repositories;
@@ -52,5 +53,8 @@ public class ComicsLoaderServiceTests
         Assert.True(_db.ParserStates.Single().LastParsedAcomics > 0);
         Assert.True(_db.ParserStates.Single().LastParsedAcomicsBegins > 0);
         Assert.True(Directory.Exists(_comicsFolderPath));
+        Assert.True(_db.Comics.Any());
+        Assert.True(_db.Comics.Any(c => c.Source == SourceType.Acomics));
+        Assert.True(_db.Comics.Any(c => c.Source == SourceType.AcomicsBegins));
     }
 }
