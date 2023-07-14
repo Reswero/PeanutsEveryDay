@@ -25,15 +25,18 @@ public class TelegramBot : IUpdateHandler
 
     public async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken)
     {
-        if (update.Message is not { } message)
-            return;
-
-        long chatId = message.Chat.Id;
-        await bot.SendTextMessageAsync(chatId, message.Text!);
+        if (update.Message is not null)
+            await HandleMessageAsync(update.Message, cancellationToken);
     }
 
     public Task HandlePollingErrorAsync(ITelegramBotClient bot, Exception exception, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
+
+    private async Task HandleMessageAsync(Message message, CancellationToken cancellationToken)
+    {
+        long chatId = message.Chat.Id;
+        await _bot.SendTextMessageAsync(chatId, message.Text!);
+    } 
 }
