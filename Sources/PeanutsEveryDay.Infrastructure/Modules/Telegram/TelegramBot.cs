@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PeanutsEveryDay.Application.Modules.Repositories;
+using PeanutsEveryDay.Application.Modules.Services;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
@@ -12,7 +13,7 @@ namespace PeanutsEveryDay.Infrastructure.Modules.Telegram;
 public class TelegramBot : IUpdateHandler
 {
     private readonly IServiceProvider _services;
-    private readonly IComicsRepository _comicsRepository;
+    private readonly IComicsService _comicsService;
     private readonly ILogger<TelegramBot> _logger;
 
     private readonly TelegramBotClient _bot;
@@ -24,7 +25,7 @@ public class TelegramBot : IUpdateHandler
     public TelegramBot(string apiKey, IServiceProvider services)
     {
         _services = services;
-        _comicsRepository = services.GetRequiredService<IComicsRepository>();
+        _comicsService = services.GetRequiredService<IComicsService>();
         _logger = services.GetRequiredService<ILogger<TelegramBot>>();
 
         _bot = new(apiKey);
@@ -66,20 +67,25 @@ public class TelegramBot : IUpdateHandler
             await SendNextComic(user, cancellationToken);
             await repository.UpdateAsync(user, cancellationToken);
         }
-
-        //await _bot.SendTextMessageAsync(chatId, message.Text!);
     }
 
     private async Task SendNextComic(Dom.User user, CancellationToken cancellationToken)
     {
         var nextDate = user.Progress.LastWatchedComicDate.AddDays(1);
-        var comic = await _comicsRepository.GetAsync(nextDate, cancellationToken);
+        var comic = await _comicsService.GetComicAsync(nextDate, user.Settings.Sources, cancellationToken);
 
         if (comic is null)
+        {
+            await _bot.SendTextMessageAsync(user.Id, "Комиксы закончились :(", cancellationToken: cancellationToken);
             return;
+        }
 
         string text = $"[{comic.PublicationDate:dd MMMM yyyy}]({comic.Url})";
+        InputFileStream fileSteam = new(comic.ImageStream, comic.PublicationDate.ToShortDateString());
+
+        await _bot.SendPhotoAsync(user.Id, fileSteam, cancellationToken: cancellationToken);
         await _bot.SendTextMessageAsync(user.Id, text, parseMode: ParseMode.Markdown, disableWebPagePreview: true);
+
         user.Progress.IncreaseDate();
     }
 }
