@@ -1,6 +1,6 @@
-﻿using PeanutsEveryDay.Data;
-using PeanutsEveryDay.Domain.Models;
+﻿using PeanutsEveryDay.Domain.Models;
 using PeanutsEveryDay.Infrastructure.Modules.Repositories;
+using PeanutsEveryDay.Infrastructure.Persistence;
 using PeanutsEveryDay.Tests.Utils;
 
 namespace PeanutsEveryDay.Infrastructure.Tests;
@@ -46,12 +46,10 @@ public class UsersRepositoryTests
         // Arrange
         UsersRepository repository = new(_db);
 
-        Data.Models.User userDb = new() { Id = 1, FirstName = "Test" };
-        Data.Models.UserProgress progressDb = new() { User = userDb };
-        Data.Models.UserSettings settingsDb = new() { User = userDb };
+        UserProgress progressDb = new() { UserId = 1 };
+        UserSettings settingsDb = new() { UserId = 1 };
+        User userDb = new() { Id = 1, FirstName = "Test", Progress = progressDb, Settings = settingsDb };
         await _db.Users.AddAsync(userDb);
-        await _db.UsersProgress.AddAsync(progressDb);
-        await _db.UsersSettings.AddAsync(settingsDb);
         await _db.SaveChangesAsync();
 
         DbUtils.ClearTracker(_db);
@@ -73,19 +71,17 @@ public class UsersRepositoryTests
         // Arrange
         UsersRepository repository = new(_db);
 
-        Data.Models.User userDb = new() { Id = 1, FirstName = "Test" };
-        Data.Models.UserProgress progressDb = new() { User = userDb };
-        Data.Models.UserSettings settingsDb = new() { User = userDb };
+        UserProgress progressDb = new() { UserId = 1 };
+        UserSettings settingsDb = new() { UserId = 1 };
+        User userDb = new() { Id = 1, FirstName = "Test", Progress = progressDb, Settings = settingsDb };
         await _db.Users.AddAsync(userDb);
-        await _db.UsersProgress.AddAsync(progressDb);
-        await _db.UsersSettings.AddAsync(settingsDb);
         await _db.SaveChangesAsync();
 
         DbUtils.ClearTracker(_db);
 
         UserProgress progress = new() { UserId = userDb.Id, TotalComicsWatched = 20 };
         UserSettings settings = new() { UserId = userDb.Id };
-        User user = new() { Id = userDb.Id, FirstName = "Test2", Progress = progress, Settings = settings };
+        User user = new() { Id = userDb.Id, FirstName = "Test2", Progress = progressDb, Settings = settingsDb };
 
         // Act
         await repository.UpdateAsync(user);

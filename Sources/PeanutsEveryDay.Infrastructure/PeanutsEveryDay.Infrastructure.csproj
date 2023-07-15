@@ -8,16 +8,17 @@
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.48" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.9" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
     <PackageReference Include="Telegram.Bot" Version="19.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PeanutsEveryDay.Application\PeanutsEveryDay.Application.csproj" />
-    <ProjectReference Include="..\PeanutsEveryDay.Data\PeanutsEveryDay.Data.csproj" />
   </ItemGroup>
 
 </Project>

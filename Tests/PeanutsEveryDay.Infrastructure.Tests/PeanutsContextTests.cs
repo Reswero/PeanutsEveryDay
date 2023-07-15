@@ -1,8 +1,9 @@
 using PeanutsEveryDay.Abstraction;
-using PeanutsEveryDay.Data.Models;
+using PeanutsEveryDay.Domain.Models;
+using PeanutsEveryDay.Infrastructure.Persistence;
 using PeanutsEveryDay.Tests.Utils;
 
-namespace PeanutsEveryDay.Data.Tests;
+namespace PeanutsEveryDay.Infrastructure.Tests;
 
 public class PeanutsContextTests
 {
@@ -86,47 +87,19 @@ public class PeanutsContextTests
     public async Task User_Added()
     {
         // Arrange
-        User user = new() { Id = 1, FirstName = "Test" };
+        UserProgress progressDb = new() { UserId = 1 };
+        UserSettings settingsDb = new() { UserId = 1 };
+        User userDb = new() { Id = 1, FirstName = "Test", Progress = progressDb, Settings = settingsDb };
 
         // Act
-        await _db.AddAsync(user);
+        await _db.AddAsync(userDb);
         await _db.SaveChangesAsync();
 
         // Assert
         Assert.Single(_db.Users.ToList());
-    }
-
-    [Fact]
-    public async Task UserProgress_Added()
-    {
-        // Arrange
-        User user = new() { Id = 1, FirstName = "Test" };
-        UserProgress progress = new() { User = user };
-
-        // Act
-        await _db.AddAsync(user);
-        await _db.AddAsync(progress);
-        await _db.SaveChangesAsync();
-
-        // Assert
         Assert.Single(_db.UsersProgress.ToList());
-        Assert.Equal(user.Id, _db.UsersProgress.Single().UserId);
-    }
-
-    [Fact]
-    public async Task UserSettings_Added()
-    {
-        // Arrange
-        User user = new() { Id = 1, FirstName = "Test" };
-        UserSettings settings = new() { User = user };
-
-        // Act
-        await _db.AddAsync(user);
-        await _db.AddAsync(settings);
-        await _db.SaveChangesAsync();
-
-        // Assert
+        Assert.Equal(userDb.Id, _db.UsersProgress.Single().UserId);
         Assert.Single(_db.UsersSettings.ToList());
-        Assert.Equal(user.Id, _db.UsersSettings.Single().UserId);
+        Assert.Equal(userDb.Id, _db.UsersSettings.Single().UserId);
     }
 }

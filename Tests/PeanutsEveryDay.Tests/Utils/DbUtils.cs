@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PeanutsEveryDay.Data;
+using PeanutsEveryDay.Infrastructure.Persistence;
 
 namespace PeanutsEveryDay.Tests.Utils;
 

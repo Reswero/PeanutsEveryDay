@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PeanutsEveryDay.Data.Models;
+using PeanutsEveryDay.Domain.Models;
 
-namespace PeanutsEveryDay.Data;
+namespace PeanutsEveryDay.Infrastructure.Persistence;
 
 public class PeanutsContext : DbContext
 {
@@ -26,8 +26,16 @@ public class PeanutsContext : DbContext
 
         modelBuilder.Entity<ParserState>(p =>
         {
+            p.HasKey("Id");
+
             p.Property(p => p.LastParsedGocomics).HasColumnType("date");
             p.Property(p => p.LastParsedGocomicsBegins).HasColumnType("date");
+        });
+
+        modelBuilder.Entity<User>(p =>
+        {
+            p.HasIndex(p => p.Id);
+            p.Property(p => p.Id).ValueGeneratedNever();
         });
 
         modelBuilder.Entity<UserProgress>(p =>
@@ -35,7 +43,7 @@ public class PeanutsContext : DbContext
             p.HasKey(p => p.UserId);
             p.HasIndex(p => p.UserId).IsUnique();
 
-            p.HasOne(p => p.User)
+            p.HasOne<User>()
              .WithOne(u => u.Progress)
              .HasForeignKey<UserProgress>(p => p.UserId)
              .OnDelete(DeleteBehavior.Cascade);
@@ -46,7 +54,7 @@ public class PeanutsContext : DbContext
             s.HasKey(s => s.UserId);
             s.HasIndex(s => s.UserId).IsUnique();
 
-            s.HasOne(s => s.User)
+            s.HasOne<User>()
              .WithOne(u => u.Settings)
              .HasForeignKey<UserSettings>(s => s.UserId)
              .OnDelete(DeleteBehavior.Cascade);
