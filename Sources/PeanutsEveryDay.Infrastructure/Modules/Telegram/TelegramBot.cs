@@ -6,6 +6,7 @@ using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 using Dom = PeanutsEveryDay.Domain.Models;
 
 namespace PeanutsEveryDay.Infrastructure.Modules.Telegram;
@@ -60,16 +61,29 @@ public class TelegramBot : IUpdateHandler
 
         if (message.Text == "/start")
         {
-            // Set menu . . .
+            await SendStartMenuAsync(user, cancellationToken);
         }
-        else if (message.Text == "next")
+        else if (message.Text == "Следующий ➡️")
         {
-            await SendNextComic(user, cancellationToken);
+            await SendNextComicAsync(user, cancellationToken);
             await repository.UpdateAsync(user, cancellationToken);
         }
     }
 
-    private async Task SendNextComic(Dom.User user, CancellationToken cancellationToken)
+    private async Task SendStartMenuAsync(Dom.User user, CancellationToken cancellationToken)
+    {
+        ReplyKeyboardMarkup replyKeyboard = new(new[]
+        {
+            new KeyboardButton("Следующий ➡️")
+        });
+
+        replyKeyboard.ResizeKeyboard = true;
+
+        await _bot.SendTextMessageAsync(user.Id, "Привет! :)", replyMarkup: replyKeyboard,
+            cancellationToken: cancellationToken);
+    }
+
+    private async Task SendNextComicAsync(Dom.User user, CancellationToken cancellationToken)
     {
         var nextDate = user.Progress.LastWatchedComicDate.AddDays(1);
         var comic = await _comicsService.GetComicAsync(nextDate, user.Settings.Sources, cancellationToken);
@@ -81,10 +95,11 @@ public class TelegramBot : IUpdateHandler
         }
 
         string text = $"[{comic.PublicationDate:dd MMMM yyyy}]({comic.Url})";
-        InputFileStream fileSteam = new(comic.ImageStream, comic.PublicationDate.ToShortDateString());
+        InputFileStream inputFile = new(comic.ImageStream, comic.PublicationDate.ToShortDateString());
 
-        await _bot.SendPhotoAsync(user.Id, fileSteam, cancellationToken: cancellationToken);
-        await _bot.SendTextMessageAsync(user.Id, text, parseMode: ParseMode.Markdown, disableWebPagePreview: true);
+        await _bot.SendPhotoAsync(user.Id, inputFile, cancellationToken: cancellationToken);
+        await _bot.SendTextMessageAsync(user.Id, text, parseMode: ParseMode.Markdown, disableWebPagePreview: true,
+            cancellationToken: cancellationToken);
 
         user.Progress.IncreaseDate();
     }
