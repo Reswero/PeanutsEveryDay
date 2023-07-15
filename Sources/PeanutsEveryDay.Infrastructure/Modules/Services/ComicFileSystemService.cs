@@ -5,7 +5,7 @@ namespace PeanutsEveryDay.Infrastructure.Modules.Services;
 
 public class ComicFileSystemService : IComicFileSystemService
 {
-    public async Task<Stream> GetImage(DateOnly date, SourceType source, CancellationToken cancellationToken = default)
+    public async Task<Stream> GetImageAsync(DateOnly date, SourceType source, CancellationToken cancellationToken = default)
     {
         string folderPath = GetFolderPath(source);
         string imagePath = $"{folderPath}/{date:yyyy_MM_dd}.png";
@@ -14,7 +14,7 @@ public class ComicFileSystemService : IComicFileSystemService
         return new MemoryStream(bytes);
     }
 
-    public async Task SaveImage(Stream stream, DateOnly date, SourceType source, CancellationToken cancellationToken = default)
+    public async Task SaveImageAsync(Stream stream, DateOnly date, SourceType source, CancellationToken cancellationToken = default)
     {
         string folderPath = GetFolderPath(source);
         Directory.CreateDirectory(folderPath);

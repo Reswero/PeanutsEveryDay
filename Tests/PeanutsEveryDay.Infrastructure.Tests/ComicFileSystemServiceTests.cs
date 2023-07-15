@@ -37,7 +37,7 @@ public class ComicFileSystemServiceTests
         ComicFileSystemService service = new();
 
         // Act
-        var stream = await service.GetImage(date, SourceType.Acomics);
+        var stream = await service.GetImageAsync(date, SourceType.Acomics);
 
         // Assert
         Assert.Equal(dataArray.Length, stream.Length);
@@ -55,7 +55,7 @@ public class ComicFileSystemServiceTests
         ComicFileSystemService service = new();
 
         // Act
-        await service.SaveImage(ms, date, SourceType.Acomics);
+        await service.SaveImageAsync(ms, date, SourceType.Acomics);
 
         // Assert
         Assert.True(File.Exists($"{FolderPath}{date:yyyy_MM_dd}.png"));

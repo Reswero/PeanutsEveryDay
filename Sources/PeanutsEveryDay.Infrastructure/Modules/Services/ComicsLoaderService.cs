@@ -80,7 +80,7 @@ public class ComicsLoaderService : IComicsLoaderService
             await foreach (var parsedComic in comics)
             {
                 var imgStream = await _converter.ConvertFromStripToSquareAsync(parsedComic.ImageStream);
-                await _fileSystemService.SaveImage(imgStream, parsedComic.PublicationDate, parsedComic.Source);
+                await _fileSystemService.SaveImageAsync(imgStream, parsedComic.PublicationDate, parsedComic.Source);
 
                 Comic comic = new()
                 {
