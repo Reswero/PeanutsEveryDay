@@ -47,6 +47,7 @@ public static class Installer
         services.AddScoped<IComicsRepository, ComicsRepository>();
         services.AddScoped<IParserStateRepository, ParserStateRepository>();
 
+        services.AddScoped<IComicsService, ComicsService>();
         services.AddScoped<IComicsLoaderService, ComicsLoaderService>();
 
         return services;

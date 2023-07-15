@@ -26,11 +26,12 @@ public class ComicsRepository : IComicsRepository
         await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<Comic?> GetAsync(DateOnly date, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyCollection<Comic>> GetAsync(DateOnly date, CancellationToken cancellationToken = default)
     {
-        var comic = await _db.Comics.Where(c => c.PublicationDate == date && c.Source == Abstraction.SourceType.AcomicsBegins)
-            .FirstOrDefaultAsync(cancellationToken);
+        var comics = await _db.Comics.Where(c => c.PublicationDate == date)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
 
-        return comic;
+        return comics;
     }
 }
