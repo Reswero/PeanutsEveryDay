@@ -16,31 +16,66 @@ public class UsersRepository : IUsersRepository
 
     public async Task AddAsync(User user, CancellationToken cancellation = default)
     {
-        Data.Models.User userDb = new() { Id = user.Id, FirstName = user.FirstName, Username = user.Username };
-        Data.Models.UserSettings settingsDb = new() { User = userDb };
-        Data.Models.UserProgress progressDb = new() { User = userDb };
+        Data.Models.User userDb = new()
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            Username = user.Username,
+            Progress = new() { UserId = user.Id },
+            Settings = new() { UserId = user.Id }
+        };
 
         await _db.Users.AddAsync(userDb, cancellation);
-        await _db.UsersSettings.AddAsync(settingsDb, cancellation);
-        await _db.UsersProgress.AddAsync(progressDb, cancellation);
         await _db.SaveChangesAsync(cancellation);
     }
 
-    public async Task<User> GetAsync(long id, CancellationToken cancellation = default)
+    public async Task<User?> GetAsync(long id, CancellationToken cancellation = default)
     {
-        var userDb = await _db.Users.FirstAsync(u => u.Id == id, cancellation);
+        var userDb = await _db.Users.Include(u => u.Progress)
+            .Include(u => u.Settings)
+            .FirstOrDefaultAsync(u => u.Id == id, cancellation);
+
+        if (userDb is null)
+        {
+            return null;
+        }
 
         return new()
         {
             Id = userDb.Id,
             FirstName = userDb.FirstName,
             Username = userDb.Username,
+            Progress = new()
+            {
+                UserId = userDb.Id,
+                TotalComicsWatched = userDb.Progress!.TotalComicsWatched
+            },
+            Settings = new()
+            {
+                UserId = userDb.Id
+            }
         };
     }
 
     public async Task UpdateAsync(User user, CancellationToken cancellation = default)
     {
-        Data.Models.User userDb = new() { Id = user.Id, FirstName = user.FirstName, Username = user.Username };
+        Data.Models.UserProgress progressDb = new()
+        {
+            UserId = user.Id,
+            TotalComicsWatched = user.Progress.TotalComicsWatched
+        };
+        Data.Models.UserSettings settingsDb = new()
+        {
+            UserId = user.Id
+        };
+        Data.Models.User userDb = new()
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            Username = user.Username,
+            Progress = progressDb,
+            Settings = settingsDb
+        };
 
         _db.Users.Update(userDb);
         await _db.SaveChangesAsync(cancellation);

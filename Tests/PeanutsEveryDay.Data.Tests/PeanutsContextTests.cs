@@ -86,7 +86,7 @@ public class PeanutsContextTests
     public async Task User_Added()
     {
         // Arrange
-        User user = new() { FirstName = "Test" };
+        User user = new() { Id = 1, FirstName = "Test" };
 
         // Act
         await _db.AddAsync(user);
@@ -100,7 +100,7 @@ public class PeanutsContextTests
     public async Task UserProgress_Added()
     {
         // Arrange
-        User user = new() { FirstName = "Test" };
+        User user = new() { Id = 1, FirstName = "Test" };
         UserProgress progress = new() { User = user };
 
         // Act
@@ -117,7 +117,7 @@ public class PeanutsContextTests
     public async Task UserSettings_Added()
     {
         // Arrange
-        User user = new() { FirstName = "Test" };
+        User user = new() { Id = 1, FirstName = "Test" };
         UserSettings settings = new() { User = user };
 
         // Act

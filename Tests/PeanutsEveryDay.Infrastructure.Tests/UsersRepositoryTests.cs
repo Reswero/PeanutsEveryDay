@@ -27,7 +27,7 @@ public class UsersRepositoryTests
         // Arrange
         UsersRepository repository = new(_db);
 
-        User user = new() { Id = 1, FirstName = "Test" };
+        User user = User.Create(1, "Test", null);
 
         // Act
         await repository.AddAsync(user);
@@ -47,7 +47,11 @@ public class UsersRepositoryTests
         UsersRepository repository = new(_db);
 
         Data.Models.User userDb = new() { Id = 1, FirstName = "Test" };
+        Data.Models.UserProgress progressDb = new() { User = userDb };
+        Data.Models.UserSettings settingsDb = new() { User = userDb };
         await _db.Users.AddAsync(userDb);
+        await _db.UsersProgress.AddAsync(progressDb);
+        await _db.UsersSettings.AddAsync(settingsDb);
         await _db.SaveChangesAsync();
 
         DbUtils.ClearTracker(_db);
@@ -56,6 +60,9 @@ public class UsersRepositoryTests
         var user = await repository.GetAsync(userDb.Id);
 
         // Assert
+        Assert.NotNull(user);
+        Assert.NotNull(user.Progress);
+        Assert.NotNull(user.Settings);
         Assert.Equal(userDb.Id, user.Id);
         Assert.Equal(userDb.FirstName, user.FirstName);
     }
@@ -67,17 +74,24 @@ public class UsersRepositoryTests
         UsersRepository repository = new(_db);
 
         Data.Models.User userDb = new() { Id = 1, FirstName = "Test" };
+        Data.Models.UserProgress progressDb = new() { User = userDb };
+        Data.Models.UserSettings settingsDb = new() { User = userDb };
         await _db.Users.AddAsync(userDb);
+        await _db.UsersProgress.AddAsync(progressDb);
+        await _db.UsersSettings.AddAsync(settingsDb);
         await _db.SaveChangesAsync();
 
         DbUtils.ClearTracker(_db);
 
-        User user = new() { Id = userDb.Id, FirstName = "Test2" };
+        UserProgress progress = new() { UserId = userDb.Id, TotalComicsWatched = 20 };
+        UserSettings settings = new() { UserId = userDb.Id };
+        User user = new() { Id = userDb.Id, FirstName = "Test2", Progress = progress, Settings = settings };
 
         // Act
         await repository.UpdateAsync(user);
 
         // Assert
         Assert.Equal(user.FirstName, _db.Users.Single().FirstName);
+        Assert.Equal(user.Progress.TotalComicsWatched, _db.UsersProgress.Single().TotalComicsWatched);
     }
 }
