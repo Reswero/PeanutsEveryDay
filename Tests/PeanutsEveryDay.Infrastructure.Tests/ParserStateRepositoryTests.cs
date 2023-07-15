@@ -1,6 +1,6 @@
-﻿using PeanutsEveryDay.Data;
-using PeanutsEveryDay.Domain.Models;
+﻿using PeanutsEveryDay.Domain.Models;
 using PeanutsEveryDay.Infrastructure.Modules.Repositories;
+using PeanutsEveryDay.Infrastructure.Persistence;
 using PeanutsEveryDay.Tests.Utils;
 
 namespace PeanutsEveryDay.Infrastructure.Tests;
@@ -42,7 +42,7 @@ public class ParserStateRepositoryTests
         // Arrange
         ParserStateRepository repository = new(_db);
 
-        Data.Models.ParserState stateDb = new();
+        ParserState stateDb = new();
         await _db.ParserStates.AddAsync(stateDb);
         await _db.SaveChangesAsync();
         DbUtils.ClearTracker(_db);
@@ -63,7 +63,7 @@ public class ParserStateRepositoryTests
         // Arrange
         ParserStateRepository repository = new(_db);
 
-        Data.Models.ParserState stateDb = new();
+        ParserState stateDb = new();
         await _db.ParserStates.AddAsync(stateDb);
         await _db.SaveChangesAsync();
         DbUtils.ClearTracker(_db);

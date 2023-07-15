@@ -4,11 +4,11 @@ using PeanutsEveryDay.Application.Modules.Converters;
 using PeanutsEveryDay.Application.Modules.Parsers;
 using PeanutsEveryDay.Application.Modules.Repositories;
 using PeanutsEveryDay.Application.Modules.Services;
-using PeanutsEveryDay.Data;
 using PeanutsEveryDay.Infrastructure.Modules.Converters;
 using PeanutsEveryDay.Infrastructure.Modules.Parsers;
 using PeanutsEveryDay.Infrastructure.Modules.Repositories;
 using PeanutsEveryDay.Infrastructure.Modules.Services;
+using PeanutsEveryDay.Infrastructure.Persistence;
 using PeanutsEveryDay.Tests.Utils;
 
 namespace PeanutsEveryDay.Infrastructure.Tests;

@@ -6,11 +6,11 @@ using PeanutsEveryDay.Application.Modules.Converters;
 using PeanutsEveryDay.Application.Modules.Parsers;
 using PeanutsEveryDay.Application.Modules.Repositories;
 using PeanutsEveryDay.Application.Modules.Services;
-using PeanutsEveryDay.Data;
 using PeanutsEveryDay.Infrastructure.Modules.Converters;
 using PeanutsEveryDay.Infrastructure.Modules.Parsers;
 using PeanutsEveryDay.Infrastructure.Modules.Repositories;
 using PeanutsEveryDay.Infrastructure.Modules.Services;
+using PeanutsEveryDay.Infrastructure.Persistence;
 
 namespace PeanutsEveryDay.Infrastructure;
 
@@ -43,6 +43,7 @@ public static class Installer
         services.AddScoped<IComicImageConverter, ComicImageConverter>();
         services.AddScoped<IComicFileSystemService, ComicFileSystemService>();
 
+        services.AddScoped<IUsersRepository, UsersRepository>();
         services.AddScoped<IComicsRepository, ComicsRepository>();
         services.AddScoped<IParserStateRepository, ParserStateRepository>();
 

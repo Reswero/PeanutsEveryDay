@@ -1,6 +1,7 @@
-﻿using PeanutsEveryDay.Application.Modules.Repositories;
-using PeanutsEveryDay.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using PeanutsEveryDay.Application.Modules.Repositories;
 using PeanutsEveryDay.Domain.Models;
+using PeanutsEveryDay.Infrastructure.Persistence;
 
 namespace PeanutsEveryDay.Infrastructure.Modules.Repositories;
 
@@ -15,27 +16,21 @@ public class ComicsRepository : IComicsRepository
 
     public async Task AddAsync(Comic comic, CancellationToken cancellationToken = default)
     {
-        var comicDb = CreateEntry(comic);
-
-        await _db.AddAsync(comicDb, cancellationToken);
+        await _db.AddAsync(comic, cancellationToken);
         await _db.SaveChangesAsync(cancellationToken);
     }
 
     public async Task AddRangeAsync(IReadOnlyCollection<Comic> comics, CancellationToken cancellationToken = default)
     {
-        var comicsDb = comics.Select(CreateEntry).ToList();
-
-        await _db.AddRangeAsync(comicsDb, cancellationToken);
+        await _db.AddRangeAsync(comics, cancellationToken);
         await _db.SaveChangesAsync(cancellationToken);
     }
 
-    private Data.Models.Comic CreateEntry(Comic comic)
+    public async Task<Comic?> GetAsync(DateOnly date, CancellationToken cancellationToken = default)
     {
-        return new()
-        {
-            PublicationDate = comic.PublicationDate,
-            Source = comic.Source,
-            Url = comic.Url
-        };
+        var comic = await _db.Comics.Where(c => c.PublicationDate == date && c.Source == Abstraction.SourceType.AcomicsBegins)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return comic;
     }
 }

@@ -12,6 +12,8 @@ public class ParserState
     private DateOnly _lastParsedGocomics = new(1950, 10, 01);
     private DateOnly _lastParsedGocomicsBegins = new(1950, 10, 01);
 
+    protected int Id { get; private set; } = 1;
+
     /// <summary>
     /// Last parsed comic number from Acomics
     /// </summary>

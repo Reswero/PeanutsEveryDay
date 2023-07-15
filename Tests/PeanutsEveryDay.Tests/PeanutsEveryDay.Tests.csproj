@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Sources\PeanutsEveryDay.Data\PeanutsEveryDay.Data.csproj" />
+    <ProjectReference Include="..\..\Sources\PeanutsEveryDay.Infrastructure\PeanutsEveryDay.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
