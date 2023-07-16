@@ -49,5 +49,6 @@ public static class NextComic
             cancellationToken: cancellationToken);
 
         user.Progress.SetDate(nextDate);
+        user.Progress.IncreaseWatchedCount();
     }
 }
