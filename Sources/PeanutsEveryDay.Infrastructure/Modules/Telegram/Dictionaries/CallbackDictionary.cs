@@ -10,5 +10,6 @@ public static class CallbackDictionary
     public const string GocomicsBeginsSource = $"{SourcePrefix}gcmB";
 
     public const string MainMenu = "menu";
+    public const string Settings = "settings";
     public const string Hide = "hide";
 }

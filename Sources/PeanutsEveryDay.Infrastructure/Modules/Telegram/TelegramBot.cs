@@ -75,7 +75,7 @@ public class TelegramBot : IUpdateHandler
         }
         else if (message.Text == CommandDictionary.Settings)
         {
-            await SettingsMenu.SendAsync(_bot, user, cancellationToken);
+            await MainMenu.SendAsync(_bot, user, cancellationToken);
         }
     }
 
