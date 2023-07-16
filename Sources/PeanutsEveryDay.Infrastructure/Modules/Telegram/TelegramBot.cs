@@ -75,7 +75,7 @@ public class TelegramBot : IUpdateHandler
         }
         else if (message.Text == CommandDictionary.Settings)
         {
-            await SettingsMenu.SendAsync(_bot, user, cancellationToken);
+            await MainMenu.SendAsync(_bot, user, cancellationToken);
         }
     }
 
@@ -85,7 +85,7 @@ public class TelegramBot : IUpdateHandler
         var repository = scope.ServiceProvider.GetRequiredService<IUsersRepository>();
 
         long chatId = callback.From.Id;
-        var user = await repository.GetAsync(chatId, cancellationToken);
+        var user = (await repository.GetAsync(chatId, cancellationToken))!;
 
         if (callback.Data is null)
             return;
@@ -97,12 +97,13 @@ public class TelegramBot : IUpdateHandler
             callback.Data = CallbackDictionary.Sources;
         }
 
-        var inlineKeyboard = CallbackHelper.GetKeyboardMarkup(callback.Data, user!.Settings);
+        var (template, inlineKeyboard) = CallbackHelper.GetTemplateWithKeyboardMarkup(callback.Data, user);
 
         int messageId = callback.Message!.MessageId;
-        if (inlineKeyboard is not null)
+        if (template is not null && inlineKeyboard is not null)
         {
-            await _bot.EditMessageReplyMarkupAsync(user.Id, messageId, inlineKeyboard, cancellationToken);
+            await _bot.EditMessageTextAsync(user.Id, messageId, template, replyMarkup: inlineKeyboard,
+                cancellationToken: cancellationToken);
         }
         else
         {

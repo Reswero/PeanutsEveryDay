@@ -2,17 +2,17 @@
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Utils;
 using Telegram.Bot;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
 
-public static class SettingsMenu
+public static class MainMenu
 {
     public static async Task SendAsync(ITelegramBotClient bot, User user, CancellationToken cancellationToken)
     {
-        InlineKeyboardMarkup inlineKeyboard = CallbackHelper.GetKeyboardMarkup(CallbackDictionary.MainMenu, user.Settings)!;
+        var (template, inlineKeyboard) =
+            CallbackHelper.GetTemplateWithKeyboardMarkup(CallbackDictionary.MainMenu, user);
 
-        await bot.SendTextMessageAsync(user.Id, CommandDictionary.Settings, replyMarkup: inlineKeyboard,
+        await bot.SendTextMessageAsync(user.Id, template!, replyMarkup: inlineKeyboard,
             cancellationToken: cancellationToken);
     }
 }
