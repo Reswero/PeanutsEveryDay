@@ -70,9 +70,10 @@ public class TelegramBot : IUpdateHandler
             await repository.AddAsync(user, cancellationToken);
         }
 
-        if (message.Text == CommandDictionary.Start)
+        if (message.Text == CommandDictionary.Start ||
+            message.Text == CommandDictionary.SetMenu)
         {
-            await StartMenu.SendAsync(_bot, user, cancellationToken);
+            await KeyboardMenu.SendAsync(_bot, user, cancellationToken);
         }
         else if (message.Text == CommandDictionary.NextComic)
         {
@@ -95,7 +96,7 @@ public class TelegramBot : IUpdateHandler
             }
             else
             {
-                await _bot.SendTextMessageAsync(user.Id, "Указан неверный формат даты",
+                await _bot.SendTextMessageAsync(user.Id, AnswerDictionary.WrongDateFormat,
                     cancellationToken: cancellationToken);
             }
         }
@@ -111,7 +112,7 @@ public class TelegramBot : IUpdateHandler
             }
             else
             {
-                await _bot.SendTextMessageAsync(user.Id, "Указан неверный формат даты",
+                await _bot.SendTextMessageAsync(user.Id, AnswerDictionary.WrongDateFormat,
                     cancellationToken: cancellationToken);
             }
         }

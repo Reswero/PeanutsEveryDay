@@ -4,6 +4,7 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types;
 using Telegram.Bot;
 using Dom = PeanutsEveryDay.Domain.Models;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
 
 namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
 
@@ -22,7 +23,7 @@ public static class ComicByDate
 
         if (comic is null)
         {
-            await bot.SendTextMessageAsync(user.Id, "Нет комикса по указанной дате :(", cancellationToken: cancellationToken);
+            await bot.SendTextMessageAsync(user.Id, AnswerDictionary.NoComicByDate, cancellationToken: cancellationToken);
             return;
         }
 
