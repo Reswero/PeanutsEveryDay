@@ -105,8 +105,15 @@ public class TelegramBot : IUpdateHandler
 
         if (comic is null)
         {
-            await _bot.SendTextMessageAsync(user.Id, "Комиксы закончились :(", cancellationToken: cancellationToken);
-            return;
+            nextDate = nextDate.AddDays(1);
+            comic = await _comicsService.GetComicAsync(nextDate, user.Settings.Sources, cancellationToken);
+
+            if (comic is null)
+            {
+                await _bot.SendTextMessageAsync(user.Id, "Комиксы закончились :(", cancellationToken: cancellationToken);
+                return;
+            }
+
         }
 
         string text = $"[{comic.PublicationDate:dd MMMM yyyy}]({comic.Url})";
@@ -116,7 +123,7 @@ public class TelegramBot : IUpdateHandler
         await _bot.SendTextMessageAsync(user.Id, text, parseMode: ParseMode.Markdown, disableWebPagePreview: true,
             cancellationToken: cancellationToken);
 
-        user.Progress.IncreaseDate();
+        user.Progress.SetDate(nextDate);
     }
 
     private async Task SendSettingsMenuAsync(Dom.User user, CancellationToken cancellationToken)
