@@ -93,6 +93,13 @@ public class TelegramBot : IUpdateHandler
 
     private async Task SendNextComicAsync(Dom.User user, CancellationToken cancellationToken)
     {
+        if (user.Settings.Sources == SourceType.None)
+        {
+            await _bot.SendTextMessageAsync(user.Id, "Должен быть выбран хотя бы один источник с комиксами!",
+                cancellationToken: cancellationToken);
+            return;
+        }
+
         var nextDate = user.Progress.LastWatchedComicDate.AddDays(1);
         var comic = await _comicsService.GetComicAsync(nextDate, user.Settings.Sources, cancellationToken);
 
@@ -191,6 +198,14 @@ public class TelegramBot : IUpdateHandler
                 new[] { InlineKeyboardButton.WithCallbackData("Gocomics (EN)" + gcm, CallbackDictionary.GocomicsSource) },
                 new[] { InlineKeyboardButton.WithCallbackData("Gocomics Begins (EN)" + gcmB, CallbackDictionary.GocomicsBeginsSource) },
                 new[] { InlineKeyboardButton.WithCallbackData("Назад", CallbackDictionary.BackFromSources) }
+            });
+        }
+        else if (callback == CallbackDictionary.BackFromSources)
+        {
+            keyboardMarkup = new(new[]
+            {
+                new[] { InlineKeyboardButton.WithCallbackData("Источники", CallbackDictionary.Sources) },
+                new[] { InlineKeyboardButton.WithCallbackData("Скрыть", CallbackDictionary.Hide) }
             });
         }
 
