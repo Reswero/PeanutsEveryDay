@@ -1,5 +1,6 @@
 ﻿using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Application.Modules.Services;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -20,7 +21,7 @@ public static class NextComic
     {
         if (user.Settings.Sources == SourceType.None)
         {
-            await bot.SendTextMessageAsync(user.Id, "Должен быть выбран хотя бы один источник с комиксами!",
+            await bot.SendTextMessageAsync(user.Id, AnswerDictionary.NeededAtLeastOneSource,
                 cancellationToken: cancellationToken);
             return;
         }
@@ -35,7 +36,7 @@ public static class NextComic
 
             if (comic is null)
             {
-                await bot.SendTextMessageAsync(user.Id, "Комиксы закончились :(", cancellationToken: cancellationToken);
+                await bot.SendTextMessageAsync(user.Id, AnswerDictionary.ComicsOut, cancellationToken: cancellationToken);
                 return;
             }
 

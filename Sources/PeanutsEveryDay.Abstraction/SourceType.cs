@@ -10,5 +10,6 @@ public enum SourceType
     Acomics = 1,
     AcomicsBegins = 2,
     Gocomics = 4,
-    GocomicsBegins = 8
+    GocomicsBegins = 8,
+    All = Acomics | AcomicsBegins | Gocomics | GocomicsBegins
 }

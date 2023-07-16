@@ -34,6 +34,7 @@ public class TelegramBot : IUpdateHandler
 
         var comicsService = services.GetRequiredService<IComicsService>();
         NextComic.Init(comicsService);
+        ComicByDate.Init(comicsService);
     }
 
     public async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken)
@@ -52,6 +53,11 @@ public class TelegramBot : IUpdateHandler
 
     private async Task HandleMessageAsync(Message message, CancellationToken cancellationToken)
     {
+        if (message.Text is null)
+        {
+            return;
+        }
+
         using var scope = _services.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IUsersRepository>();
 
@@ -64,18 +70,51 @@ public class TelegramBot : IUpdateHandler
             await repository.AddAsync(user, cancellationToken);
         }
 
-        if (message.Text == CommandDictionary.Start)
+        if (message.Text == CommandDictionary.Start ||
+            message.Text == CommandDictionary.SetMenu)
         {
-            await StartMenu.SendAsync(_bot, user, cancellationToken);
+            await KeyboardMenu.SendAsync(_bot, user, cancellationToken);
         }
         else if (message.Text == CommandDictionary.NextComic)
         {
             await NextComic.SendAsync(_bot, user, cancellationToken);
             await repository.UpdateAsync(user, cancellationToken);
         }
-        else if (message.Text == CommandDictionary.Settings)
+        else if (message.Text == CommandDictionary.Menu)
         {
             await MainMenu.SendAsync(_bot, user, cancellationToken);
+        }
+        else if (message.Text.StartsWith(CommandDictionary.ComicByDate))
+        {
+            string textDate = message.Text[CommandDictionary.ComicByDate.Length..];
+            var parsed = DateOnly.TryParse(textDate, out var date);
+
+            if (parsed is true)
+            {
+                await ComicByDate.SendAsync(_bot, date, user, cancellationToken);
+                await repository.UpdateAsync(user, cancellationToken);
+            }
+            else
+            {
+                await _bot.SendTextMessageAsync(user.Id, AnswerDictionary.WrongDateFormat,
+                    cancellationToken: cancellationToken);
+            }
+        }
+        else if (message.Text.StartsWith(CommandDictionary.SetDate))
+        {
+            string textDate = message.Text[CommandDictionary.SetDate.Length..];
+            var parsed = DateOnly.TryParse(textDate, out var date);
+
+            if (parsed is true)
+            {
+                await SetDate.ExecuteAsync(_bot, date, user, cancellationToken);
+                await repository.UpdateAsync(user, cancellationToken);
+            }
+            else
+            {
+                await _bot.SendTextMessageAsync(user.Id, AnswerDictionary.WrongDateFormat,
+                    cancellationToken: cancellationToken);
+            }
         }
     }
 

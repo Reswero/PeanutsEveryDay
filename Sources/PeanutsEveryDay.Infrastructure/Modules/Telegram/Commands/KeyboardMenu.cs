@@ -5,12 +5,12 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
 
-public static class StartMenu
+public static class KeyboardMenu
 {
     private static readonly ReplyKeyboardMarkup _replyKeyboard = new(new[]
     {
             new KeyboardButton(CommandDictionary.NextComic),
-            new KeyboardButton(CommandDictionary.Settings)
+            new KeyboardButton(CommandDictionary.Menu)
     })
     {
         ResizeKeyboard = true
@@ -18,7 +18,7 @@ public static class StartMenu
 
     public static async Task SendAsync(ITelegramBotClient bot, User user, CancellationToken cancellationToken)
     {
-        await bot.SendTextMessageAsync(user.Id, "Привет! :)", replyMarkup: _replyKeyboard,
+        await bot.SendTextMessageAsync(user.Id, AnswerDictionary.Greetings, replyMarkup: _replyKeyboard,
             cancellationToken: cancellationToken);
     }
 }
