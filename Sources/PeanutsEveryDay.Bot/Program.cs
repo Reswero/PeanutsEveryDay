@@ -17,9 +17,9 @@ internal class Program
         serviceProvider.InitializeDatabase();
 
         var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-        var apiKey = configuration["TelegramAPI:Token"]!;
+        var token = configuration["TelegramAPI:Token"]!;
 
-        TelegramBot bot = new(apiKey, serviceProvider);
+        TelegramBot bot = new(token, serviceProvider);
 
         using var scope = serviceProvider.CreateScope();
         var loader = scope.ServiceProvider.GetRequiredService<IComicsLoaderService>();

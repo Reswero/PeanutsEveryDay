@@ -1,4 +1,4 @@
-﻿namespace PeanutsEveryDay.Infrastructure.Modules.Telegram;
+﻿namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
 
 public static class CallbackDictionary
 {
@@ -8,7 +8,7 @@ public static class CallbackDictionary
     public const string AcomicsBeginsSource = $"{SourcePrefix}acmB";
     public const string GocomicsSource = $"{SourcePrefix}gcm";
     public const string GocomicsBeginsSource = $"{SourcePrefix}gcmB";
-    public const string BackFromSources = "bckFrSrcs";
 
+    public const string MainMenu = "menu";
     public const string Hide = "hide";
 }

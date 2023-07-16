@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Application.Modules.Repositories;
 using PeanutsEveryDay.Application.Modules.Services;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Utils;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
 using Dom = PeanutsEveryDay.Domain.Models;
 
 namespace PeanutsEveryDay.Infrastructure.Modules.Telegram;
@@ -15,7 +16,6 @@ namespace PeanutsEveryDay.Infrastructure.Modules.Telegram;
 public class TelegramBot : IUpdateHandler
 {
     private readonly IServiceProvider _services;
-    private readonly IComicsService _comicsService;
     private readonly ILogger<TelegramBot> _logger;
 
     private readonly TelegramBotClient _bot;
@@ -24,14 +24,16 @@ public class TelegramBot : IUpdateHandler
         AllowedUpdates = new[] { UpdateType.Message, UpdateType.CallbackQuery }
     };
 
-    public TelegramBot(string apiKey, IServiceProvider services)
+    public TelegramBot(string token, IServiceProvider services)
     {
         _services = services;
-        _comicsService = services.GetRequiredService<IComicsService>();
         _logger = services.GetRequiredService<ILogger<TelegramBot>>();
 
-        _bot = new(apiKey);
+        _bot = new(token);
         _bot.StartReceiving(HandleUpdateAsync, HandlePollingErrorAsync, _receiverOptions);
+
+        var comicsService = services.GetRequiredService<IComicsService>();
+        NextComic.Init(comicsService);
     }
 
     public async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken)
@@ -62,80 +64,19 @@ public class TelegramBot : IUpdateHandler
             await repository.AddAsync(user, cancellationToken);
         }
 
-        if (message.Text == "/start")
+        if (message.Text == CommandDictionary.Start)
         {
-            await SendStartMenuAsync(user, cancellationToken);
+            await StartMenu.SendAsync(_bot, user, cancellationToken);
         }
         else if (message.Text == CommandDictionary.NextComic)
         {
-            await SendNextComicAsync(user, cancellationToken);
+            await NextComic.SendAsync(_bot, user, cancellationToken);
             await repository.UpdateAsync(user, cancellationToken);
         }
         else if (message.Text == CommandDictionary.Settings)
         {
-            await SendSettingsMenuAsync(user, cancellationToken);
+            await SettingsMenu.SendAsync(_bot, user, cancellationToken);
         }
-    }
-
-    private async Task SendStartMenuAsync(Dom.User user, CancellationToken cancellationToken)
-    {
-        ReplyKeyboardMarkup replyKeyboard = new(new[]
-        {
-            new KeyboardButton(CommandDictionary.NextComic),
-            new KeyboardButton(CommandDictionary.Settings)
-        });
-
-        replyKeyboard.ResizeKeyboard = true;
-
-        await _bot.SendTextMessageAsync(user.Id, "Привет! :)", replyMarkup: replyKeyboard,
-            cancellationToken: cancellationToken);
-    }
-
-    private async Task SendNextComicAsync(Dom.User user, CancellationToken cancellationToken)
-    {
-        if (user.Settings.Sources == SourceType.None)
-        {
-            await _bot.SendTextMessageAsync(user.Id, "Должен быть выбран хотя бы один источник с комиксами!",
-                cancellationToken: cancellationToken);
-            return;
-        }
-
-        var nextDate = user.Progress.LastWatchedComicDate.AddDays(1);
-        var comic = await _comicsService.GetComicAsync(nextDate, user.Settings.Sources, cancellationToken);
-
-        if (comic is null)
-        {
-            nextDate = nextDate.AddDays(1);
-            comic = await _comicsService.GetComicAsync(nextDate, user.Settings.Sources, cancellationToken);
-
-            if (comic is null)
-            {
-                await _bot.SendTextMessageAsync(user.Id, "Комиксы закончились :(", cancellationToken: cancellationToken);
-                return;
-            }
-
-        }
-
-        string text = $"[{comic.PublicationDate:dd MMMM yyyy}]({comic.Url})";
-        InputFileStream inputFile = new(comic.ImageStream, comic.PublicationDate.ToShortDateString());
-
-        await _bot.SendPhotoAsync(user.Id, inputFile, cancellationToken: cancellationToken);
-        await _bot.SendTextMessageAsync(user.Id, text, parseMode: ParseMode.Markdown, disableWebPagePreview: true,
-            cancellationToken: cancellationToken);
-
-        user.Progress.SetDate(nextDate);
-    }
-
-    private async Task SendSettingsMenuAsync(Dom.User user, CancellationToken cancellationToken)
-    {
-        InlineKeyboardMarkup inlineKeyboard = new(new[]
-        {
-            new[] { InlineKeyboardButton.WithCallbackData("Источники", CallbackDictionary.Sources) },
-            new[] { InlineKeyboardButton.WithCallbackData("Скрыть", CallbackDictionary.Hide) }
-        });
-
-        await _bot.SendTextMessageAsync(user.Id, CommandDictionary.Settings, replyMarkup: inlineKeyboard,
-            cancellationToken: cancellationToken);
     }
 
     private async Task HandleCallbackAsync(CallbackQuery callback, CancellationToken cancellationToken)
@@ -151,12 +92,12 @@ public class TelegramBot : IUpdateHandler
 
         if (callback.Data.StartsWith(CallbackDictionary.SourcePrefix))
         {
-            ChangeSources(user!.Settings, callback.Data);
+            CallbackHelper.ChangeSources(callback.Data, user!.Settings);
             await repository.UpdateAsync(user, cancellationToken);
             callback.Data = CallbackDictionary.Sources;
         }
 
-        var inlineKeyboard = GetKeyboardMarkup(user!.Settings, callback.Data);
+        var inlineKeyboard = CallbackHelper.GetKeyboardMarkup(callback.Data, user!.Settings);
 
         int messageId = callback.Message!.MessageId;
         if (inlineKeyboard is not null)
@@ -167,55 +108,5 @@ public class TelegramBot : IUpdateHandler
         {
             await _bot.DeleteMessageAsync(user.Id, messageId, cancellationToken);
         }
-    }
-
-    private void ChangeSources(Dom.UserSettings settings, string callback)
-    {
-        switch (callback)
-        {
-            case CallbackDictionary.AcomicsSource:
-                settings.InverseSource(SourceType.Acomics);
-                break;
-            case CallbackDictionary.AcomicsBeginsSource:
-                settings.InverseSource(SourceType.AcomicsBegins);
-                break;
-            case CallbackDictionary.GocomicsSource:
-                settings.InverseSource(SourceType.Gocomics);
-                break;
-            case CallbackDictionary.GocomicsBeginsSource:
-                settings.InverseSource(SourceType.GocomicsBegins);
-                break;
-        }
-    }
-
-    private InlineKeyboardMarkup? GetKeyboardMarkup(Dom.UserSettings settings, string callback)
-    {
-        InlineKeyboardMarkup? keyboardMarkup = null;
-        if (callback == CallbackDictionary.Sources)
-        {
-            string? acm = settings.Sources.HasFlag(SourceType.Acomics) ? " ✅" : null;
-            string? acmB = settings.Sources.HasFlag(SourceType.AcomicsBegins) ? " ✅" : null;
-            string? gcm = settings.Sources.HasFlag(SourceType.Gocomics) ? " ✅" : null;
-            string? gcmB = settings.Sources.HasFlag(SourceType.GocomicsBegins) ? " ✅" : null;
-
-            keyboardMarkup = new(new[]
-            {
-                new[] { InlineKeyboardButton.WithCallbackData("Acomics (RU)" + acm, CallbackDictionary.AcomicsSource) },
-                new[] { InlineKeyboardButton.WithCallbackData("Acomics Begins (RU)" + acmB, CallbackDictionary.AcomicsBeginsSource) },
-                new[] { InlineKeyboardButton.WithCallbackData("Gocomics (EN)" + gcm, CallbackDictionary.GocomicsSource) },
-                new[] { InlineKeyboardButton.WithCallbackData("Gocomics Begins (EN)" + gcmB, CallbackDictionary.GocomicsBeginsSource) },
-                new[] { InlineKeyboardButton.WithCallbackData("Назад", CallbackDictionary.BackFromSources) }
-            });
-        }
-        else if (callback == CallbackDictionary.BackFromSources)
-        {
-            keyboardMarkup = new(new[]
-            {
-                new[] { InlineKeyboardButton.WithCallbackData("Источники", CallbackDictionary.Sources) },
-                new[] { InlineKeyboardButton.WithCallbackData("Скрыть", CallbackDictionary.Hide) }
-            });
-        }
-
-        return keyboardMarkup;
     }
 }
