@@ -10,7 +10,7 @@ public static class StartMenu
     private static readonly ReplyKeyboardMarkup _replyKeyboard = new(new[]
     {
             new KeyboardButton(CommandDictionary.NextComic),
-            new KeyboardButton(CommandDictionary.Settings)
+            new KeyboardButton(CommandDictionary.Menu)
     })
     {
         ResizeKeyboard = true

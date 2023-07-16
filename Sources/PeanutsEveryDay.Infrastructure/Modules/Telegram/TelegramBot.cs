@@ -79,18 +79,34 @@ public class TelegramBot : IUpdateHandler
             await NextComic.SendAsync(_bot, user, cancellationToken);
             await repository.UpdateAsync(user, cancellationToken);
         }
-        else if (message.Text == CommandDictionary.Settings)
+        else if (message.Text == CommandDictionary.Menu)
         {
             await MainMenu.SendAsync(_bot, user, cancellationToken);
         }
         else if (message.Text.StartsWith(CommandDictionary.ComicByDate))
         {
-            string maybeDate = message.Text[CommandDictionary.ComicByDate.Length..];
-            var parsed = DateOnly.TryParse(maybeDate, out var date);
+            string textDate = message.Text[CommandDictionary.ComicByDate.Length..];
+            var parsed = DateOnly.TryParse(textDate, out var date);
 
             if (parsed is true)
             {
                 await ComicByDate.SendAsync(_bot, date, user, cancellationToken);
+                await repository.UpdateAsync(user, cancellationToken);
+            }
+            else
+            {
+                await _bot.SendTextMessageAsync(user.Id, "Указан неверный формат даты",
+                    cancellationToken: cancellationToken);
+            }
+        }
+        else if (message.Text.StartsWith(CommandDictionary.SetDate))
+        {
+            string textDate = message.Text[CommandDictionary.SetDate.Length..];
+            var parsed = DateOnly.TryParse(textDate, out var date);
+
+            if (parsed is true)
+            {
+                await SetDate.ExecuteAsync(_bot, date, user, cancellationToken);
                 await repository.UpdateAsync(user, cancellationToken);
             }
             else
