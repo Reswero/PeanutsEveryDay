@@ -12,8 +12,8 @@ public class UserProgress
     }
     public int TotalComicsWatched { get; init; }
 
-    public void IncreaseDate()
+    public void SetDate(DateOnly date)
     {
-        _lastWatchedComicDate = LastWatchedComicDate.AddDays(1);
+        _lastWatchedComicDate = date;
     }
 }
