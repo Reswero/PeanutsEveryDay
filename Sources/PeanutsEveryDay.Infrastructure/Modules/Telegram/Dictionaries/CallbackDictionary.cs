@@ -9,6 +9,11 @@ public static class CallbackDictionary
     public const string GocomicsSource = $"{SourcePrefix}gcm";
     public const string GocomicsBeginsSource = $"{SourcePrefix}gcmB";
 
+    public const string Period = "period";
+    public const string PeriodPrefix = "prd_";
+    public const string EveryHourPeriod = $"{PeriodPrefix}eh";
+    public const string EveryDayPeriod = $"{PeriodPrefix}ed";
+
     public const string MainMenu = "menu";
     public const string Progress = "progress";
     public const string Settings = "settings";
