@@ -26,6 +26,19 @@ public static class CallbackHelper
         }
     }
 
+    public static void ChangePeriod(string callback, UserSettings settings)
+    {
+        switch (callback)
+        {
+            case CallbackDictionary.EveryHourPeriod:
+                settings.SetPeriod(PeriodType.EveryHour);
+                break;
+            case CallbackDictionary.EveryDayPeriod:
+                settings.SetPeriod(PeriodType.EveryDay);
+                break;
+        }
+    }
+
     public static (string?, InlineKeyboardMarkup?) GetTemplateWithKeyboardMarkup(string callback, User user)
     {
         return callback switch
@@ -34,6 +47,7 @@ public static class CallbackHelper
             CallbackDictionary.Progress => GetProgressMenu(user.Progress),
             CallbackDictionary.Settings => GetSettingsMenu(),
             CallbackDictionary.Sources => GetSourcesMenu(user.Settings),
+            CallbackDictionary.Period => GetPeriodMenu(user.Settings),
             _ => (null, null),
         };
     }
@@ -81,6 +95,7 @@ public static class CallbackHelper
         InlineKeyboardMarkup keyboardMarkup = new(new[]
         {
             new[] { InlineKeyboardButton.WithCallbackData("Источники", CallbackDictionary.Sources) },
+            new[] { InlineKeyboardButton.WithCallbackData("Период", CallbackDictionary.Period) },
             new[] { InlineKeyboardButton.WithCallbackData("Назад", CallbackDictionary.MainMenu) }
         });
 
@@ -101,6 +116,22 @@ public static class CallbackHelper
             new[] { InlineKeyboardButton.WithCallbackData("Acomics Begins (RU)" + acmB, CallbackDictionary.AcomicsBeginsSource) },
             new[] { InlineKeyboardButton.WithCallbackData("Gocomics (EN)" + gcm, CallbackDictionary.GocomicsSource) },
             new[] { InlineKeyboardButton.WithCallbackData("Gocomics Begins (EN)" + gcmB, CallbackDictionary.GocomicsBeginsSource) },
+            new[] { InlineKeyboardButton.WithCallbackData("Назад", CallbackDictionary.Settings) }
+        });
+
+        return (template, keyboardMarkup);
+    }
+
+    private static (string, InlineKeyboardMarkup) GetPeriodMenu(UserSettings settings)
+    {
+        string? eh = settings.Period.HasFlag(PeriodType.EveryHour) ? " ✅" : null;
+        string? ed = settings.Period.HasFlag(PeriodType.EveryDay) ? " ✅" : null;
+
+        string template = "Период";
+        InlineKeyboardMarkup keyboardMarkup = new(new[]
+        {
+            new[] { InlineKeyboardButton.WithCallbackData("Каждый час" + eh, CallbackDictionary.EveryHourPeriod) },
+            new[] { InlineKeyboardButton.WithCallbackData("Каждый день" + ed, CallbackDictionary.EveryDayPeriod) },
             new[] { InlineKeyboardButton.WithCallbackData("Назад", CallbackDictionary.Settings) }
         });
 

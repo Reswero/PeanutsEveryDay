@@ -39,10 +39,17 @@ public class TelegramBot : IUpdateHandler
 
     public async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken)
     {
-        if (update.Message is not null)
-            await HandleMessageAsync(update.Message, cancellationToken);
-        else if (update.CallbackQuery is not null)
-            await HandleCallbackAsync(update.CallbackQuery, cancellationToken);
+        try
+        {
+            if (update.Message is not null)
+                await HandleMessageAsync(update.Message, cancellationToken);
+            else if (update.CallbackQuery is not null)
+                await HandleCallbackAsync(update.CallbackQuery, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "{Error}", ex.Message);
+        }
     }
 
     public Task HandlePollingErrorAsync(ITelegramBotClient bot, Exception exception, CancellationToken cancellationToken)
@@ -134,6 +141,12 @@ public class TelegramBot : IUpdateHandler
             CallbackHelper.ChangeSources(callback.Data, user!.Settings);
             await repository.UpdateAsync(user, cancellationToken);
             callback.Data = CallbackDictionary.Sources;
+        }
+        else if (callback.Data.StartsWith(CallbackDictionary.PeriodPrefix))
+        {
+            CallbackHelper.ChangePeriod(callback.Data, user!.Settings);
+            await repository.UpdateAsync(user, cancellationToken);
+            callback.Data = CallbackDictionary.Period;
         }
 
         var (template, inlineKeyboard) = CallbackHelper.GetTemplateWithKeyboardMarkup(callback.Data, user);
