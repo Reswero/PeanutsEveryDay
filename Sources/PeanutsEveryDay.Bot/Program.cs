@@ -23,7 +23,7 @@ internal class Program
 
         using var scope = serviceProvider.CreateScope();
         var loader = scope.ServiceProvider.GetRequiredService<IComicsLoaderService>();
-        await loader.LoadAsync(TimeSpan.FromMinutes(1));
+        await loader.LoadAsync(TimeSpan.FromMinutes(3));
 
         Console.ReadLine();
     }

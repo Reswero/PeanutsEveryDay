@@ -4,6 +4,7 @@ using PeanutsEveryDay.Application.Modules.Repositories;
 using PeanutsEveryDay.Application.Modules.Services;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Utils;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
@@ -23,6 +24,7 @@ public class TelegramBot : IUpdateHandler
     {
         AllowedUpdates = new[] { UpdateType.Message, UpdateType.CallbackQuery }
     };
+    private readonly TimeComicsSenderService _senderService;
 
     public TelegramBot(string token, IServiceProvider services)
     {
@@ -35,6 +37,9 @@ public class TelegramBot : IUpdateHandler
         var comicsService = services.GetRequiredService<IComicsService>();
         NextComic.Init(comicsService);
         ComicByDate.Init(comicsService);
+
+        _senderService = new(_bot, services);
+        _senderService.Start();
     }
 
     public async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken)
