@@ -59,7 +59,7 @@ public class TelegramBot : IUpdateHandler
 
     public Task HandlePollingErrorAsync(ITelegramBotClient bot, Exception exception, CancellationToken cancellationToken)
     {
-        _logger.LogError(exception, "Message handling error. {Error}", exception.Message);
+        _logger.LogCritical(exception, "Bot crashed. {Error}", exception.Message);
         return Task.CompletedTask;
     }
 

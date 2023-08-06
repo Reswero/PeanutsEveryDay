@@ -45,8 +45,7 @@ public static class NextComic
         string text = $"[{comic.PublicationDate:dd MMMM yyyy}]({comic.Url})";
         InputFileStream inputFile = new(comic.ImageStream, comic.PublicationDate.ToShortDateString());
 
-        await bot.SendPhotoAsync(user.Id, inputFile, cancellationToken: cancellationToken);
-        await bot.SendTextMessageAsync(user.Id, text, parseMode: ParseMode.Markdown, disableWebPagePreview: true,
+        await bot.SendPhotoAsync(user.Id, inputFile, caption: text, parseMode: ParseMode.Markdown,
             cancellationToken: cancellationToken);
 
         user.Progress.SetDate(nextDate);
