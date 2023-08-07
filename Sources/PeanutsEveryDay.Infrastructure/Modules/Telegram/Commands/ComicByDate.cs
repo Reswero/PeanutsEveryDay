@@ -1,37 +1,34 @@
 ﻿using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Application.Modules.Services;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types;
-using Telegram.Bot;
-using Dom = PeanutsEveryDay.Domain.Models;
+using PeanutsEveryDay.Domain.Models;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Messages;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
 
 namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
 
 public static class ComicByDate
 {
     private static IComicsService _comicsService;
+    private static MessagesSenderService _senderService;
 
-    public static void Init(IComicsService comicsService)
+    public static void Init(IComicsService comicsService, MessagesSenderService senderService)
     {
         _comicsService = comicsService;
+        _senderService = senderService;
     }
 
-    public static async Task SendAsync(ITelegramBotClient bot, DateOnly date, Dom.User user, CancellationToken cancellationToken)
+    public static async Task SendAsync(DateOnly date, User user, CancellationToken cancellationToken)
     {
         var comic = await _comicsService.GetComicAsync(date, SourceType.All, cancellationToken);
 
         if (comic is null)
         {
-            await bot.SendTextMessageAsync(user.Id, AnswerDictionary.NoComicByDate, cancellationToken: cancellationToken);
+            _senderService.EnqueueMessage(new TextMessage(user.Id, AnswerDictionary.NoComicByDate));
             return;
         }
 
-        string text = $"[{comic.PublicationDate:dd MMMM yyyy}]({comic.Url})";
-        InputFileStream inputFile = new(comic.ImageStream, comic.PublicationDate.ToShortDateString());
-
-        await bot.SendPhotoAsync(user.Id, inputFile, caption: text, parseMode: ParseMode.Markdown,
-            cancellationToken: cancellationToken);
+        _senderService.EnqueueMessage(new ComicMessage(user.Id, comic));
 
         user.Progress.IncreaseWatchedCount();
     }

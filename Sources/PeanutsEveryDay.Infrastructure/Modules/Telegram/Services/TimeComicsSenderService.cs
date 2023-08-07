@@ -3,23 +3,20 @@ using Microsoft.Extensions.Logging;
 using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Application.Modules.Repositories;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
-using Telegram.Bot;
 using Timer = System.Timers.Timer;
 
 namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
 
 public class TimeComicsSenderService
 {
-    private readonly ITelegramBotClient _bot;
     private readonly IServiceProvider _provider;
     private readonly ILogger<TimeComicsSenderService> _logger;
 
     private Timer _hourTimer;
     private Timer _dayTimer;
 
-    public TimeComicsSenderService(ITelegramBotClient bot, IServiceProvider provider)
+    public TimeComicsSenderService(IServiceProvider provider)
     {
-        _bot = bot;
         _provider = provider;
         _logger = provider.GetRequiredService<ILogger<TimeComicsSenderService>>();
     }
@@ -86,7 +83,7 @@ public class TimeComicsSenderService
 
         foreach (var user in users)
         {
-            await NextComic.SendAsync(_bot, user, CancellationToken.None);
+            await NextComic.SendAsync(user, CancellationToken.None);
             await repository.UpdateAsync(user, CancellationToken.None);
         }
     }

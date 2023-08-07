@@ -4,6 +4,7 @@ using PeanutsEveryDay.Application.Modules.Repositories;
 using PeanutsEveryDay.Application.Modules.Services;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Messages;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Utils;
 using Telegram.Bot;
@@ -25,6 +26,7 @@ public class TelegramBot : IUpdateHandler
         AllowedUpdates = new[] { UpdateType.Message, UpdateType.CallbackQuery }
     };
     private readonly TimeComicsSenderService _senderService;
+    private readonly MessagesSenderService _messagesSenderService;
 
     public TelegramBot(string token, IServiceProvider services)
     {
@@ -34,11 +36,16 @@ public class TelegramBot : IUpdateHandler
         _bot = new(token);
         _bot.StartReceiving(HandleUpdateAsync, HandlePollingErrorAsync, _receiverOptions);
 
-        var comicsService = services.GetRequiredService<IComicsService>();
-        NextComic.Init(comicsService);
-        ComicByDate.Init(comicsService);
+        _messagesSenderService = new(_bot);
 
-        _senderService = new(_bot, services);
+        var comicsService = services.GetRequiredService<IComicsService>();
+
+        MainMenu.Init(_messagesSenderService);
+        KeyboardMenu.Init(_messagesSenderService);
+        NextComic.Init(comicsService, _messagesSenderService);
+        ComicByDate.Init(comicsService, _messagesSenderService);
+
+        _senderService = new(services);
         _senderService.Start();
     }
 
@@ -85,16 +92,16 @@ public class TelegramBot : IUpdateHandler
         if (message.Text == CommandDictionary.Start ||
             message.Text == CommandDictionary.SetMenu)
         {
-            await KeyboardMenu.SendAsync(_bot, user, cancellationToken);
+            await KeyboardMenu.SendAsync(user, cancellationToken);
         }
         else if (message.Text == CommandDictionary.NextComic)
         {
-            await NextComic.SendAsync(_bot, user, cancellationToken);
+            await NextComic.SendAsync(user, cancellationToken);
             await repository.UpdateAsync(user, cancellationToken);
         }
         else if (message.Text == CommandDictionary.Menu)
         {
-            await MainMenu.SendAsync(_bot, user, cancellationToken);
+            await MainMenu.SendAsync(user, cancellationToken);
         }
         else if (message.Text.StartsWith(CommandDictionary.ComicByDate))
         {
@@ -103,13 +110,12 @@ public class TelegramBot : IUpdateHandler
 
             if (parsed is true)
             {
-                await ComicByDate.SendAsync(_bot, date, user, cancellationToken);
+                await ComicByDate.SendAsync(date, user, cancellationToken);
                 await repository.UpdateAsync(user, cancellationToken);
             }
             else
             {
-                await _bot.SendTextMessageAsync(user.Id, AnswerDictionary.WrongDateFormat,
-                    cancellationToken: cancellationToken);
+                _messagesSenderService.EnqueueMessage(new TextMessage(user.Id, AnswerDictionary.WrongDateFormat));
             }
         }
         else if (message.Text.StartsWith(CommandDictionary.SetDate))
@@ -124,8 +130,7 @@ public class TelegramBot : IUpdateHandler
             }
             else
             {
-                await _bot.SendTextMessageAsync(user.Id, AnswerDictionary.WrongDateFormat,
-                    cancellationToken: cancellationToken);
+                _messagesSenderService.EnqueueMessage(new TextMessage(user.Id, AnswerDictionary.WrongDateFormat));
             }
         }
     }
