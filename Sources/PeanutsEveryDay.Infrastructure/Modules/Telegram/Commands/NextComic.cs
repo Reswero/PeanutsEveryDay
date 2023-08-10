@@ -1,28 +1,28 @@
 ﻿using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Application.Modules.Services;
+using PeanutsEveryDay.Domain.Models;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
-using Telegram.Bot;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
-using Dom = PeanutsEveryDay.Domain.Models;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Messages;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
 
 namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
 
 public static class NextComic
 {
     private static IComicsService _comicsService;
+    private static MessagesSenderService _senderService;
 
-    public static void Init(IComicsService comicsService)
+    public static void Init(IComicsService comicsService, MessagesSenderService senderService)
     {
         _comicsService = comicsService;
+        _senderService = senderService;
     }
 
-    public static async Task SendAsync(ITelegramBotClient bot, Dom.User user, CancellationToken cancellationToken)
+    public static async Task SendAsync(User user, CancellationToken cancellationToken)
     {
         if (user.Settings.Sources == SourceType.None)
         {
-            await bot.SendTextMessageAsync(user.Id, AnswerDictionary.NeededAtLeastOneSource,
-                cancellationToken: cancellationToken);
+            _senderService.EnqueueMessage(new TextMessage(user.Id, AnswerDictionary.NeededAtLeastOneSource));
             return;
         }
 
@@ -36,18 +36,12 @@ public static class NextComic
 
             if (comic is null)
             {
-                await bot.SendTextMessageAsync(user.Id, AnswerDictionary.ComicsOut, cancellationToken: cancellationToken);
+                _senderService.EnqueueMessage(new TextMessage(user.Id, AnswerDictionary.ComicsOut));
                 return;
             }
-
         }
 
-        string text = $"[{comic.PublicationDate:dd MMMM yyyy}]({comic.Url})";
-        InputFileStream inputFile = new(comic.ImageStream, comic.PublicationDate.ToShortDateString());
-
-        await bot.SendPhotoAsync(user.Id, inputFile, cancellationToken: cancellationToken);
-        await bot.SendTextMessageAsync(user.Id, text, parseMode: ParseMode.Markdown, disableWebPagePreview: true,
-            cancellationToken: cancellationToken);
+        _senderService.EnqueueMessage(new ComicMessage(user.Id, comic));
 
         user.Progress.SetDate(nextDate);
         user.Progress.IncreaseWatchedCount();

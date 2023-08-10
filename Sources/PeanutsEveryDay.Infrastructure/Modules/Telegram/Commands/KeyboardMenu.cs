@@ -1,6 +1,7 @@
 ﻿using PeanutsEveryDay.Domain.Models;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
-using Telegram.Bot;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Messages;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
@@ -16,9 +17,15 @@ public static class KeyboardMenu
         ResizeKeyboard = true
     };
 
-    public static async Task SendAsync(ITelegramBotClient bot, User user, CancellationToken cancellationToken)
+    private static MessagesSenderService _senderService;
+
+    public static void Init(MessagesSenderService senderService)
     {
-        await bot.SendTextMessageAsync(user.Id, AnswerDictionary.Greetings, replyMarkup: _replyKeyboard,
-            cancellationToken: cancellationToken);
+        _senderService = senderService;
+    }
+
+    public static async Task SendAsync(User user, CancellationToken cancellationToken)
+    {
+        _senderService.EnqueueMessage(new TextMessage(user.Id, AnswerDictionary.Greetings, _replyKeyboard));
     }
 }
