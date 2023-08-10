@@ -10,6 +10,9 @@ using PeanutsEveryDay.Infrastructure.Modules.Converters;
 using PeanutsEveryDay.Infrastructure.Modules.Parsers;
 using PeanutsEveryDay.Infrastructure.Modules.Repositories;
 using PeanutsEveryDay.Infrastructure.Modules.Services;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Handlers;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
 using PeanutsEveryDay.Infrastructure.Persistence;
 
@@ -52,6 +55,16 @@ public static class Installer
 
         services.AddSingleton<IComicsLoaderService, ComicsLoaderService>();
         services.AddSingleton<TimeComicsSenderService>();
+        services.AddSingleton<TelegramBot>(provider =>
+        {
+            var token = configuration["TelegramAPI:Token"]!;
+            return new(token, provider);
+        });
+        services.AddSingleton<MessagesSenderService>(provider =>
+        {
+            var botClient = provider.GetRequiredService<TelegramBot>().Client;
+            return new(botClient);
+        });
 
         return services;
     }
@@ -63,5 +76,34 @@ public static class Installer
 
         db.Database.EnsureDeleted();
         db.Database.EnsureCreated();
+    }
+
+    public static void InitializeTelegramBot(this IServiceProvider provider)
+    {
+        _ = provider.GetRequiredService<TelegramBot>();
+        provider.InitializeHandlers();
+        provider.InitializeCommands();
+
+        var comicsSenderService = provider.GetRequiredService<TimeComicsSenderService>();
+        comicsSenderService.Start();
+    }
+
+    private static void InitializeHandlers(this IServiceProvider provider)
+    {
+        var senderService = provider.GetRequiredService<MessagesSenderService>();
+
+        MessageHandler.Init(provider, senderService);
+        CallbackHandler.Init(provider, senderService);
+    }
+
+    private static void InitializeCommands(this IServiceProvider provider)
+    {
+        var comicsService = provider.GetRequiredService<IComicsService>();
+        var senderService = provider.GetRequiredService<MessagesSenderService>();
+
+        MainMenu.Init(senderService);
+        KeyboardMenu.Init(senderService);
+        NextComic.Init(comicsService, senderService);
+        ComicByDate.Init(comicsService, senderService);
     }
 }
