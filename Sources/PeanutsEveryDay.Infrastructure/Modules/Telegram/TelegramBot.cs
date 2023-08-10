@@ -164,12 +164,11 @@ public class TelegramBot : IUpdateHandler
         int messageId = callback.Message!.MessageId;
         if (template is not null && inlineKeyboard is not null)
         {
-            await _bot.EditMessageTextAsync(user.Id, messageId, template, replyMarkup: inlineKeyboard,
-                cancellationToken: cancellationToken);
+            _messagesSenderService.EnqueueMessage(new EditMessage(user.Id, messageId, template, inlineKeyboard));
         }
         else
         {
-            await _bot.DeleteMessageAsync(user.Id, messageId, cancellationToken);
+            _messagesSenderService.EnqueueMessage(new DeleteMessage(user.Id, messageId));
         }
     }
 }

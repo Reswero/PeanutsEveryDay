@@ -79,7 +79,8 @@ public class TimeComicsSenderService
     private async Task SendComics(PeriodType period)
     {
         var repository = _provider.CreateScope().ServiceProvider.GetRequiredService<IUsersRepository>();
-        var users = await repository.GetByFilterAsync(u => u.Settings.Period == period);
+        var users = await repository.GetByFilterAsync(u => u.Settings.Period == period &&
+                                                           u.Settings.Sources != SourceType.None);
 
         foreach (var user in users)
         {

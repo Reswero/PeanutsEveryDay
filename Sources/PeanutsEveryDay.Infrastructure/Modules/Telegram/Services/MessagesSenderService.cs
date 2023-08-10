@@ -1,9 +1,9 @@
-﻿using PeanutsEveryDay.Domain.Models;
-using PeanutsEveryDay.Infrastructure.Modules.Telegram.Messages;
+﻿using PeanutsEveryDay.Infrastructure.Modules.Telegram.Messages;
 using System.Collections.Concurrent;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 using Timer = System.Timers.Timer;
 
 namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
@@ -73,6 +73,12 @@ public class MessagesSenderService
     {
         switch (message)
         {
+            case EditMessage e:
+                await _bot.EditMessageTextAsync(e.UserId, e.MessageId, e.Text, replyMarkup: e.ReplyMarkup as InlineKeyboardMarkup);
+                break;
+            case DeleteMessage d:
+                await _bot.DeleteMessageAsync(d.UserId, d.MessageId);
+                break;
             case TextMessage t:
                 await _bot.SendTextMessageAsync(t.UserId, t.Text, replyMarkup: t.ReplyMarkup);
                 break;
