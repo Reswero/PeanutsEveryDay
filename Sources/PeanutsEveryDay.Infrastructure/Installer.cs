@@ -10,6 +10,7 @@ using PeanutsEveryDay.Infrastructure.Modules.Converters;
 using PeanutsEveryDay.Infrastructure.Modules.Parsers;
 using PeanutsEveryDay.Infrastructure.Modules.Repositories;
 using PeanutsEveryDay.Infrastructure.Modules.Services;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
 using PeanutsEveryDay.Infrastructure.Persistence;
 
 namespace PeanutsEveryDay.Infrastructure;
@@ -48,7 +49,9 @@ public static class Installer
         services.AddScoped<IParserStateRepository, ParserStateRepository>();
 
         services.AddScoped<IComicsService, ComicsService>();
-        services.AddScoped<IComicsLoaderService, ComicsLoaderService>();
+
+        services.AddSingleton<IComicsLoaderService, ComicsLoaderService>();
+        services.AddSingleton<TimeComicsSenderService>();
 
         return services;
     }

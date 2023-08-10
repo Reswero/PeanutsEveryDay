@@ -3,6 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 using PeanutsEveryDay.Application.Modules.Services;
 using PeanutsEveryDay.Infrastructure;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Handlers;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
 
 namespace PeanutsEveryDay.Bot;
 
@@ -21,10 +24,32 @@ internal class Program
 
         TelegramBot bot = new(token, serviceProvider);
 
-        using var scope = serviceProvider.CreateScope();
-        var loader = scope.ServiceProvider.GetRequiredService<IComicsLoaderService>();
-        await loader.LoadAsync(TimeSpan.FromMinutes(3));
+        MessagesSenderService messagesSenderService = new(bot.Client);
+        var comicsService = serviceProvider.GetRequiredService<IComicsService>();
+
+        InitHandlers(serviceProvider, messagesSenderService);
+        InitCommands(messagesSenderService, comicsService);
+
+        var comicsSenderService = serviceProvider.GetRequiredService<TimeComicsSenderService>();
+        comicsSenderService.Start();
+
+        var loader = serviceProvider.GetRequiredService<IComicsLoaderService>();
+        await loader.LoadAsync(TimeSpan.FromMinutes(10));
 
         Console.ReadLine();
+    }
+
+    private static void InitHandlers(IServiceProvider serviceProvider, MessagesSenderService senderService)
+    {
+        MessageHandler.Init(serviceProvider, senderService);
+        CallbackHandler.Init(serviceProvider, senderService);
+    }
+
+    private static void InitCommands(MessagesSenderService senderService, IComicsService comicsService)
+    {
+        MainMenu.Init(senderService);
+        KeyboardMenu.Init(senderService);
+        NextComic.Init(comicsService, senderService);
+        ComicByDate.Init(comicsService, senderService);
     }
 }
