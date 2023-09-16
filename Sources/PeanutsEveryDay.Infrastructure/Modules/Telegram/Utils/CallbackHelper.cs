@@ -1,6 +1,8 @@
 ﻿using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Domain.Models;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.Abstractions;
+using PeanutsEveryDay.Infrastructure.Modules.Utils;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Utils;
@@ -11,16 +13,16 @@ public static class CallbackHelper
     {
         switch (callback)
         {
-            case CallbackDictionary.AcomicsSource:
+            case CallbackKey.AcomicsSource:
                 settings.InverseSource(SourceType.Acomics);
                 break;
-            case CallbackDictionary.AcomicsBeginsSource:
+            case CallbackKey.AcomicsBeginsSource:
                 settings.InverseSource(SourceType.AcomicsBegins);
                 break;
-            case CallbackDictionary.GocomicsSource:
+            case CallbackKey.GocomicsSource:
                 settings.InverseSource(SourceType.Gocomics);
                 break;
-            case CallbackDictionary.GocomicsBeginsSource:
+            case CallbackKey.GocomicsBeginsSource:
                 settings.InverseSource(SourceType.GocomicsBegins);
                 break;
         }
@@ -30,109 +32,120 @@ public static class CallbackHelper
     {
         switch (callback)
         {
-            case CallbackDictionary.EveryHourPeriod:
+            case CallbackKey.EveryHourPeriod:
                 settings.SetPeriod(PeriodType.EveryHour);
                 break;
-            case CallbackDictionary.EveryDayPeriod:
+            case CallbackKey.EveryDayPeriod:
                 settings.SetPeriod(PeriodType.EveryDay);
                 break;
         }
     }
 
-    public static (string?, InlineKeyboardMarkup?) GetTemplateWithKeyboardMarkup(string callback, User user)
+    public static (string?, InlineKeyboardMarkup?) GetTemplateWithKeyboardMarkup(string callback, User user,
+        CallbackDictionary dictionary)
     {
         return callback switch
         {
-            CallbackDictionary.MainMenu => GetMainMenu(),
-            CallbackDictionary.Progress => GetProgressMenu(user.Progress),
-            CallbackDictionary.Settings => GetSettingsMenu(),
-            CallbackDictionary.Sources => GetSourcesMenu(user.Settings),
-            CallbackDictionary.Period => GetPeriodMenu(user.Settings),
+            CallbackKey.MainMenu => GetMainMenu(dictionary),
+            CallbackKey.Progress => GetProgressMenu(user, dictionary),
+            CallbackKey.Settings => GetSettingsMenu(dictionary),
+            CallbackKey.Sources => GetSourcesMenu(user, dictionary),
+            CallbackKey.Period => GetPeriodMenu(user.Settings, dictionary),
             _ => (null, null),
         };
     }
 
-    private static (string, InlineKeyboardMarkup) GetMainMenu()
+    private static (string, InlineKeyboardMarkup) GetMainMenu(CallbackDictionary dictionary)
     {
-        string template = "Меню";
+        string template = dictionary.MainMenu;
         InlineKeyboardMarkup keyboardMarkup = new(new[]
         {
-            new[] { InlineKeyboardButton.WithCallbackData("Прогресс", CallbackDictionary.Progress) },
-            new[] { InlineKeyboardButton.WithCallbackData("Настройки", CallbackDictionary.Settings) },
-            new[] { InlineKeyboardButton.WithCallbackData("Скрыть", CallbackDictionary.Hide) }
+            new[] { InlineKeyboardButton.WithCallbackData(dictionary.Progress, CallbackKey.Progress) },
+            new[] { InlineKeyboardButton.WithCallbackData(dictionary.Settings, CallbackKey.Settings) },
+            new[] { InlineKeyboardButton.WithCallbackData(dictionary.Hide, CallbackKey.Hide) }
         });
         
         return (template, keyboardMarkup);
     }
 
-    private static (string, InlineKeyboardMarkup) GetProgressMenu(UserProgress progress)
+    private static (string, InlineKeyboardMarkup) GetProgressMenu(User user, CallbackDictionary dictionary)
     {
+        var progress = user.Progress;
+
         var currentDate = DateOnly.FromDateTime(DateTime.Now);
         var startDate = new DateOnly(1950, 10, 01);
 
         var watched = progress.LastWatchedComicDate.DayNumber - startDate.DayNumber;
         var totalComics = currentDate.DayNumber - startDate.DayNumber;
 
-        string template =
-            $"""
-            Прогресс
-
-            Всего просмотренно комиксов: {progress.TotalComicsWatched}
-            Текущая дата: {progress.LastWatchedComicDate:dd.MM.yyyy}
-            Просмотренно {watched} комиксов из ~{totalComics}
-            """;
+        string lastWatchedComicDate = DateUtils.ConvertDate(progress.LastWatchedComicDate, user.Language);
+        string template = string.Format(dictionary.ProgressTemplate, progress.TotalComicsWatched,
+            lastWatchedComicDate, watched, totalComics);
         InlineKeyboardMarkup keyboardMarkup = new(new[]
         {
-            new[] { InlineKeyboardButton.WithCallbackData("Назад", CallbackDictionary.MainMenu) },
+            new[] { InlineKeyboardButton.WithCallbackData(dictionary.Back, CallbackKey.MainMenu) },
         });
 
         return (template, keyboardMarkup);
     }
 
-    private static (string, InlineKeyboardMarkup) GetSettingsMenu()
+    private static (string, InlineKeyboardMarkup) GetSettingsMenu(CallbackDictionary dictionary)
     {
-        string template = "Настройки";
+        string template = dictionary.Settings;
         InlineKeyboardMarkup keyboardMarkup = new(new[]
         {
-            new[] { InlineKeyboardButton.WithCallbackData("Источники", CallbackDictionary.Sources) },
-            new[] { InlineKeyboardButton.WithCallbackData("Период", CallbackDictionary.Period) },
-            new[] { InlineKeyboardButton.WithCallbackData("Назад", CallbackDictionary.MainMenu) }
+            new[] { InlineKeyboardButton.WithCallbackData(dictionary.Sources, CallbackKey.Sources) },
+            new[] { InlineKeyboardButton.WithCallbackData(dictionary.Period, CallbackKey.Period) },
+            new[] { InlineKeyboardButton.WithCallbackData(dictionary.Back, CallbackKey.MainMenu) }
         });
 
         return (template, keyboardMarkup);
     }
 
-    private static (string, InlineKeyboardMarkup) GetSourcesMenu(UserSettings settings)
+    private static (string, InlineKeyboardMarkup) GetSourcesMenu(User user, CallbackDictionary dictionary)
     {
-        string? acm = settings.Sources.HasFlag(SourceType.Acomics) ? " ✅" : null;
-        string? acmB = settings.Sources.HasFlag(SourceType.AcomicsBegins) ? " ✅" : null;
-        string? gcm = settings.Sources.HasFlag(SourceType.Gocomics) ? " ✅" : null;
-        string? gcmB = settings.Sources.HasFlag(SourceType.GocomicsBegins) ? " ✅" : null;
+        var settings = user.Settings;
 
-        string template = "Источники";
-        InlineKeyboardMarkup keyboardMarkup = new(new[]
+        string? gcm = settings.Sources.HasFlag(SourceType.Gocomics) ? dictionary.SelectedItemLabel : null;
+        string? gcmB = settings.Sources.HasFlag(SourceType.GocomicsBegins) ? dictionary.SelectedItemLabel : null;
+
+        string template = dictionary.Sources;
+
+        List<InlineKeyboardButton[]> buttons = new(5);
+        if (user.Language == LanguageCode.Ru)
         {
-            new[] { InlineKeyboardButton.WithCallbackData("Acomics (RU)" + acm, CallbackDictionary.AcomicsSource) },
-            new[] { InlineKeyboardButton.WithCallbackData("Acomics Begins (RU)" + acmB, CallbackDictionary.AcomicsBeginsSource) },
-            new[] { InlineKeyboardButton.WithCallbackData("Gocomics (EN)" + gcm, CallbackDictionary.GocomicsSource) },
-            new[] { InlineKeyboardButton.WithCallbackData("Gocomics Begins (EN)" + gcmB, CallbackDictionary.GocomicsBeginsSource) },
-            new[] { InlineKeyboardButton.WithCallbackData("Назад", CallbackDictionary.Settings) }
+            string? acm = settings.Sources.HasFlag(SourceType.Acomics) ? dictionary.SelectedItemLabel : null;
+            string? acmB = settings.Sources.HasFlag(SourceType.AcomicsBegins) ? dictionary.SelectedItemLabel : null;
+
+            buttons.AddRange(new[]
+            {
+                new[] { InlineKeyboardButton.WithCallbackData("Acomics (RU)" + acm, CallbackKey.AcomicsSource) },
+                new[] { InlineKeyboardButton.WithCallbackData("Acomics Begins (RU)" + acmB, CallbackKey.AcomicsBeginsSource) }
+            });
+        }
+
+        buttons.AddRange(new[]
+        {
+            new[] { InlineKeyboardButton.WithCallbackData("Gocomics (EN)" + gcm, CallbackKey.GocomicsSource) },
+            new[] { InlineKeyboardButton.WithCallbackData("Gocomics Begins (EN)" + gcmB, CallbackKey.GocomicsBeginsSource) },
+            new[] { InlineKeyboardButton.WithCallbackData(dictionary.Back, CallbackKey.Settings) }
         });
 
+        InlineKeyboardMarkup keyboardMarkup = new(buttons);
         return (template, keyboardMarkup);
     }
 
-    private static (string, InlineKeyboardMarkup) GetPeriodMenu(UserSettings settings)
+    private static (string, InlineKeyboardMarkup) GetPeriodMenu(UserSettings settings, CallbackDictionary dictionary)
     {
-        string? eh = settings.Period.HasFlag(PeriodType.EveryHour) ? " ✅" : null;
-        string? ed = settings.Period.HasFlag(PeriodType.EveryDay) ? " ✅" : null;
+        string? eh = settings.Period.HasFlag(PeriodType.EveryHour) ? dictionary.SelectedItemLabel : null;
+        string? ed = settings.Period.HasFlag(PeriodType.EveryDay) ? dictionary.SelectedItemLabel : null;
 
-        string template = "Период";
+        string template = dictionary.Period;
         InlineKeyboardMarkup keyboardMarkup = new(new[]
         {
-            new[] { InlineKeyboardButton.WithCallbackData("Каждый час" + eh, CallbackDictionary.EveryHourPeriod) },
-            new[] { InlineKeyboardButton.WithCallbackData("Каждый день" + ed, CallbackDictionary.EveryDayPeriod) },
-            new[] { InlineKeyboardButton.WithCallbackData("Назад", CallbackDictionary.Settings) }
+            new[] { InlineKeyboardButton.WithCallbackData(dictionary.EveryHour + eh, CallbackKey.EveryHourPeriod) },
+            new[] { InlineKeyboardButton.WithCallbackData(dictionary.EveryDay + ed, CallbackKey.EveryDayPeriod) },
+            new[] { InlineKeyboardButton.WithCallbackData(dictionary.Back, CallbackKey.Settings) }
         });
 
         return (template, keyboardMarkup);

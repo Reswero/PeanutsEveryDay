@@ -1,4 +1,5 @@
 ﻿using PeanutsEveryDay.Infrastructure.Modules.Telegram.Messages;
+using PeanutsEveryDay.Infrastructure.Modules.Utils;
 using System.Collections.Concurrent;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -83,7 +84,8 @@ public class MessagesSenderService
                 await _bot.SendTextMessageAsync(t.UserId, t.Text, replyMarkup: t.ReplyMarkup);
                 break;
             case ComicMessage i:
-                string caption = $"[{i.Comic.PublicationDate:dd MMMM yyyy}]({i.Comic.Url})";
+                string date = DateUtils.ConvertDate(i.Comic.PublicationDate, i.Language);
+                string caption = $"[{date}]({i.Comic.Url})";
                 InputFileStream inputFile = new(i.Comic.ImageStream, i.Comic.PublicationDate.ToShortDateString());
                 await _bot.SendPhotoAsync(i.UserId, inputFile, caption: caption, parseMode: ParseMode.Markdown);
                 break;

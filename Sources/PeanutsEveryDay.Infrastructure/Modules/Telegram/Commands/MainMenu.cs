@@ -1,5 +1,6 @@
 ﻿using PeanutsEveryDay.Domain.Models;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.Abstractions;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Messages;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Utils;
@@ -15,10 +16,10 @@ public static class MainMenu
         _senderService = senderService;
     }
 
-    public static async Task SendAsync(User user, CancellationToken cancellationToken)
+    public static async Task SendAsync(User user, CallbackDictionary dictionary, CancellationToken cancellationToken)
     {
         var (template, inlineKeyboard) =
-            CallbackHelper.GetTemplateWithKeyboardMarkup(CallbackDictionary.MainMenu, user);
+            CallbackHelper.GetTemplateWithKeyboardMarkup(CallbackKey.MainMenu, user, dictionary);
 
         _senderService.EnqueueMessage(new TextMessage(user.Id, template, inlineKeyboard));
     }

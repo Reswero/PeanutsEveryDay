@@ -27,7 +27,7 @@ public class UsersRepositoryTests
         // Arrange
         UsersRepository repository = new(_db);
 
-        User user = User.Create(1, "Test", null);
+        User user = User.Create(1, "Test", null, "ru");
 
         // Act
         await repository.AddAsync(user);

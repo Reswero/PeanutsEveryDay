@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using PeanutsEveryDay.Application.Modules.Services;
 using PeanutsEveryDay.Infrastructure;
-using PeanutsEveryDay.Infrastructure.Modules.Telegram;
 
 namespace PeanutsEveryDay.Bot;
 
@@ -15,15 +13,10 @@ internal class Program
             .BuildServiceProvider();
 
         serviceProvider.InitializeDatabase();
+        serviceProvider.InitializeTelegramBot();
 
-        var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-        var token = configuration["TelegramAPI:Token"]!;
-
-        TelegramBot bot = new(token, serviceProvider);
-
-        using var scope = serviceProvider.CreateScope();
-        var loader = scope.ServiceProvider.GetRequiredService<IComicsLoaderService>();
-        await loader.LoadAsync(TimeSpan.FromMinutes(3));
+        var loader = serviceProvider.GetRequiredService<IComicsLoaderService>();
+        await loader.LoadAsync(TimeSpan.FromMinutes(10));
 
         Console.ReadLine();
     }

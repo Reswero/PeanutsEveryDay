@@ -1,5 +1,6 @@
 ﻿using PeanutsEveryDay.Domain.Models;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.Abstractions;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Messages;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -8,15 +9,6 @@ namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
 
 public static class KeyboardMenu
 {
-    private static readonly ReplyKeyboardMarkup _replyKeyboard = new(new[]
-    {
-            new KeyboardButton(CommandDictionary.NextComic),
-            new KeyboardButton(CommandDictionary.Menu)
-    })
-    {
-        ResizeKeyboard = true
-    };
-
     private static MessagesSenderService _senderService;
 
     public static void Init(MessagesSenderService senderService)
@@ -24,8 +16,18 @@ public static class KeyboardMenu
         _senderService = senderService;
     }
 
-    public static async Task SendAsync(User user, CancellationToken cancellationToken)
+    public static async Task SendAsync(User user, CommandDictionary commandDictionary,
+        AnswerDictionary answerDictionary, CancellationToken cancellationToken)
     {
-        _senderService.EnqueueMessage(new TextMessage(user.Id, AnswerDictionary.Greetings, _replyKeyboard));
+        ReplyKeyboardMarkup replyKeyboard = new(new[]
+        {
+            new KeyboardButton(commandDictionary.NextComic),
+            new KeyboardButton(commandDictionary.Menu)
+        })
+        {
+            ResizeKeyboard = true
+        };
+
+        _senderService.EnqueueMessage(new TextMessage(user.Id, answerDictionary.Greetings, replyKeyboard));
     }
 }

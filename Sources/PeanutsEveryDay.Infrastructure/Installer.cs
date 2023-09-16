@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Application.Modules.Converters;
 using PeanutsEveryDay.Application.Modules.Parsers;
 using PeanutsEveryDay.Application.Modules.Repositories;
@@ -10,6 +11,12 @@ using PeanutsEveryDay.Infrastructure.Modules.Converters;
 using PeanutsEveryDay.Infrastructure.Modules.Parsers;
 using PeanutsEveryDay.Infrastructure.Modules.Repositories;
 using PeanutsEveryDay.Infrastructure.Modules.Services;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Handlers;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Utils;
 using PeanutsEveryDay.Infrastructure.Persistence;
 
 namespace PeanutsEveryDay.Infrastructure;
@@ -48,7 +55,23 @@ public static class Installer
         services.AddScoped<IParserStateRepository, ParserStateRepository>();
 
         services.AddScoped<IComicsService, ComicsService>();
-        services.AddScoped<IComicsLoaderService, ComicsLoaderService>();
+
+        services.AddSingleton<IComicsLoaderService, ComicsLoaderService>();
+        services.AddSingleton<TimeComicsSenderService>();
+        services.AddSingleton<TelegramBot>(provider =>
+        {
+            var token = configuration["TelegramAPI:Token"]!;
+            return new(token, provider);
+        });
+        services.AddSingleton<MessagesSenderService>(provider =>
+        {
+            var botClient = provider.GetRequiredService<TelegramBot>().Client;
+            return new(botClient);
+        });
+
+        services.AddCommandDictionaries();
+        services.AddAnswerDictionaries();
+        services.AddCallbackDictionaries();
 
         return services;
     }
@@ -60,5 +83,82 @@ public static class Installer
 
         db.Database.EnsureDeleted();
         db.Database.EnsureCreated();
+    }
+
+    public static void InitializeTelegramBot(this IServiceProvider provider)
+    {
+        _ = provider.GetRequiredService<TelegramBot>();
+        provider.InitializeHandlers();
+        provider.InitializeCommands();
+
+        var comicsSenderService = provider.GetRequiredService<TimeComicsSenderService>();
+        comicsSenderService.Start();
+    }
+
+    private static void InitializeHandlers(this IServiceProvider provider)
+    {
+        var senderService = provider.GetRequiredService<MessagesSenderService>();
+
+        MessageHandler.Init(provider, senderService);
+        CallbackHandler.Init(provider, senderService);
+    }
+
+    private static void InitializeCommands(this IServiceProvider provider)
+    {
+        var comicsService = provider.GetRequiredService<IComicsService>();
+        var senderService = provider.GetRequiredService<MessagesSenderService>();
+
+        MainMenu.Init(senderService);
+        KeyboardMenu.Init(senderService);
+        NextComic.Init(comicsService, senderService);
+        ComicByDate.Init(comicsService, senderService);
+    }
+
+    private static void AddCommandDictionaries(this IServiceCollection services)
+    {
+        services.AddSingleton<RuCommandDictionary>();
+        services.AddSingleton<EnCommandDictionary>();
+
+        services.AddTransient<CommandDictionaryResolver>(provider => language =>
+        {
+            return language switch
+            {
+                LanguageCode.Ru => provider.GetRequiredService<RuCommandDictionary>(),
+                LanguageCode.En => provider.GetRequiredService<EnCommandDictionary>(),
+                _ => throw new NotImplementedException()
+            };
+        });
+    }
+
+    private static void AddAnswerDictionaries(this IServiceCollection services)
+    {
+        services.AddSingleton<RuAnswerDictionary>();
+        services.AddSingleton<EnAnswerDictionary>();
+
+        services.AddTransient<AnswerDictionaryResolver>(provider => language =>
+        {
+            return language switch
+            {
+                LanguageCode.Ru => provider.GetRequiredService<RuAnswerDictionary>(),
+                LanguageCode.En => provider.GetRequiredService<EnAnswerDictionary>(),
+                _ => throw new NotImplementedException()
+            };
+        });
+    }
+
+    private static void AddCallbackDictionaries(this IServiceCollection services)
+    {
+        services.AddSingleton<RuCallbackDictionary>();
+        services.AddSingleton<EnCallbackDictionary>();
+
+        services.AddTransient<CallbackDictionaryResolver>(provider => language =>
+        {
+            return language switch
+            {
+                LanguageCode.Ru => provider.GetRequiredService<RuCallbackDictionary>(),
+                LanguageCode.En => provider.GetRequiredService<EnCallbackDictionary>(),
+                _ => throw new NotImplementedException()
+            };
+        });
     }
 }
