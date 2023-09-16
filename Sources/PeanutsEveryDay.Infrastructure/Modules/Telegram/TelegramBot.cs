@@ -21,11 +21,11 @@ public class TelegramBot : IUpdateHandler
     {
         _logger = services.GetRequiredService<ILogger<TelegramBot>>();
 
-        Client = new(token);
+        Client = new TelegramBotClient(token);
         Client.StartReceiving(HandleUpdateAsync, HandlePollingErrorAsync, _receiverOptions);
     }
 
-    public TelegramBotClient Client { get; }
+    public ITelegramBotClient Client { get; }
 
     public async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken)
     {

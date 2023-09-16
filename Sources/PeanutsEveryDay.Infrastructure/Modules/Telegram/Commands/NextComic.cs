@@ -1,7 +1,7 @@
 ﻿using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Application.Modules.Services;
 using PeanutsEveryDay.Domain.Models;
-using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.Abstractions;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Messages;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
 
@@ -18,11 +18,11 @@ public static class NextComic
         _senderService = senderService;
     }
 
-    public static async Task SendAsync(User user, CancellationToken cancellationToken)
+    public static async Task SendAsync(User user, AnswerDictionary dictionary, CancellationToken cancellationToken)
     {
         if (user.Settings.Sources == SourceType.None)
         {
-            _senderService.EnqueueMessage(new TextMessage(user.Id, AnswerDictionary.NeededAtLeastOneSource));
+            _senderService.EnqueueMessage(new TextMessage(user.Id, dictionary.NeededAtLeastOneSource));
             return;
         }
 
@@ -36,12 +36,12 @@ public static class NextComic
 
             if (comic is null)
             {
-                _senderService.EnqueueMessage(new TextMessage(user.Id, AnswerDictionary.ComicsOut));
+                _senderService.EnqueueMessage(new TextMessage(user.Id, dictionary.ComicsOut));
                 return;
             }
         }
 
-        _senderService.EnqueueMessage(new ComicMessage(user.Id, comic));
+        _senderService.EnqueueMessage(new ComicMessage(user.Id, user.Language, comic));
 
         user.Progress.SetDate(nextDate);
         user.Progress.IncreaseWatchedCount();

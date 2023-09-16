@@ -27,23 +27,25 @@ public static class CallbackHandler
         long chatId = callback.From.Id;
         var user = (await repository.GetAsync(chatId, cancellationToken))!;
 
+        var dictionary = scope.ServiceProvider.GetRequiredService<CallbackDictionaryResolver>().Invoke(user.Language);
+
         if (callback.Data is null)
             return;
 
-        if (callback.Data.StartsWith(CallbackDictionary.SourcePrefix))
+        if (callback.Data.StartsWith(CallbackKey.SourcePrefix))
         {
-            CallbackHelper.ChangeSources(callback.Data, user!.Settings);
+            CallbackHelper.ChangeSources(callback.Data, user.Settings);
             await repository.UpdateAsync(user, cancellationToken);
-            callback.Data = CallbackDictionary.Sources;
+            callback.Data = CallbackKey.Sources;
         }
-        else if (callback.Data.StartsWith(CallbackDictionary.PeriodPrefix))
+        else if (callback.Data.StartsWith(CallbackKey.PeriodPrefix))
         {
-            CallbackHelper.ChangePeriod(callback.Data, user!.Settings);
+            CallbackHelper.ChangePeriod(callback.Data, user.Settings);
             await repository.UpdateAsync(user, cancellationToken);
-            callback.Data = CallbackDictionary.Period;
+            callback.Data = CallbackKey.Period;
         }
 
-        var (template, inlineKeyboard) = CallbackHelper.GetTemplateWithKeyboardMarkup(callback.Data, user);
+        var (template, inlineKeyboard) = CallbackHelper.GetTemplateWithKeyboardMarkup(callback.Data, user, dictionary);
 
         int messageId = callback.Message!.MessageId;
         if (template is not null && inlineKeyboard is not null)

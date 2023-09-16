@@ -1,6 +1,6 @@
 ﻿namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
 
-public static class CallbackDictionary
+public static class CallbackKey
 {
     public const string Sources = "srcs";
     public const string SourcePrefix = "src_";

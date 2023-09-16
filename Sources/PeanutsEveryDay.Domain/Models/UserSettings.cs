@@ -4,8 +4,7 @@ namespace PeanutsEveryDay.Domain.Models;
 
 public class UserSettings
 {
-    private SourceType _sources = SourceType.AcomicsBegins | SourceType.Acomics |
-        SourceType.GocomicsBegins | SourceType.Gocomics;
+    private SourceType _sources;
     private PeriodType _period = PeriodType.EveryHour;
 
     public long UserId { get; init; }
@@ -18,6 +17,27 @@ public class UserSettings
     {
         get => _period;
         init => _period = value;
+    }
+
+    public static UserSettings Create(long userId, LanguageCode language)
+    {
+        SourceType sources;
+
+        if (language == LanguageCode.Ru)
+        {
+            sources = SourceType.Acomics | SourceType.AcomicsBegins |
+                SourceType.Gocomics | SourceType.GocomicsBegins;
+        }
+        else
+        {
+            sources = SourceType.Gocomics | SourceType.GocomicsBegins;
+        }
+
+        return new UserSettings
+        {
+            UserId = userId,
+            Sources = sources
+        };
     }
 
     public void InverseSource(SourceType source)

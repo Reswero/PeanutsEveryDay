@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Application.Modules.Converters;
 using PeanutsEveryDay.Application.Modules.Parsers;
 using PeanutsEveryDay.Application.Modules.Repositories;
@@ -12,8 +13,10 @@ using PeanutsEveryDay.Infrastructure.Modules.Repositories;
 using PeanutsEveryDay.Infrastructure.Modules.Services;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Handlers;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Utils;
 using PeanutsEveryDay.Infrastructure.Persistence;
 
 namespace PeanutsEveryDay.Infrastructure;
@@ -66,6 +69,10 @@ public static class Installer
             return new(botClient);
         });
 
+        services.AddCommandDictionaries();
+        services.AddAnswerDictionaries();
+        services.AddCallbackDictionaries();
+
         return services;
     }
 
@@ -105,5 +112,53 @@ public static class Installer
         KeyboardMenu.Init(senderService);
         NextComic.Init(comicsService, senderService);
         ComicByDate.Init(comicsService, senderService);
+    }
+
+    private static void AddCommandDictionaries(this IServiceCollection services)
+    {
+        services.AddSingleton<RuCommandDictionary>();
+        services.AddSingleton<EnCommandDictionary>();
+
+        services.AddTransient<CommandDictionaryResolver>(provider => language =>
+        {
+            return language switch
+            {
+                LanguageCode.Ru => provider.GetRequiredService<RuCommandDictionary>(),
+                LanguageCode.En => provider.GetRequiredService<EnCommandDictionary>(),
+                _ => throw new NotImplementedException()
+            };
+        });
+    }
+
+    private static void AddAnswerDictionaries(this IServiceCollection services)
+    {
+        services.AddSingleton<RuAnswerDictionary>();
+        services.AddSingleton<EnAnswerDictionary>();
+
+        services.AddTransient<AnswerDictionaryResolver>(provider => language =>
+        {
+            return language switch
+            {
+                LanguageCode.Ru => provider.GetRequiredService<RuAnswerDictionary>(),
+                LanguageCode.En => provider.GetRequiredService<EnAnswerDictionary>(),
+                _ => throw new NotImplementedException()
+            };
+        });
+    }
+
+    private static void AddCallbackDictionaries(this IServiceCollection services)
+    {
+        services.AddSingleton<RuCallbackDictionary>();
+        services.AddSingleton<EnCallbackDictionary>();
+
+        services.AddTransient<CallbackDictionaryResolver>(provider => language =>
+        {
+            return language switch
+            {
+                LanguageCode.Ru => provider.GetRequiredService<RuCallbackDictionary>(),
+                LanguageCode.En => provider.GetRequiredService<EnCallbackDictionary>(),
+                _ => throw new NotImplementedException()
+            };
+        });
     }
 }
