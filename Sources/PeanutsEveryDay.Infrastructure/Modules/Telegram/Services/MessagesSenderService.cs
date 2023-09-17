@@ -1,4 +1,5 @@
-﻿using PeanutsEveryDay.Infrastructure.Modules.Telegram.Messages;
+﻿using Microsoft.Extensions.Logging;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Messages;
 using PeanutsEveryDay.Infrastructure.Modules.Utils;
 using System.Collections.Concurrent;
 using Telegram.Bot;
@@ -19,10 +20,12 @@ public class MessagesSenderService
     private readonly TimeSpan _sendingInterval = TimeSpan.FromSeconds(0.5);
     private readonly Timer _timer;
 
+    private readonly ILogger<MessagesSenderService> _logger;
     private readonly ITelegramBotClient _bot;
 
-    public MessagesSenderService(ITelegramBotClient bot)
+    public MessagesSenderService(ILogger<MessagesSenderService> logger, ITelegramBotClient bot)
     {
+        _logger = logger;
         _bot = bot;
 
         _timer = new()
@@ -66,7 +69,18 @@ public class MessagesSenderService
     {
         while (!queue.IsEmpty && queue.TryDequeue(out AbstractMessage message))
         {
-            await SendMessage(message);
+            try
+            {
+                await SendMessage(message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Exception occured while sending message. {Error}", ex.Message);
+            }
+            finally
+            {
+                AntiSpamService.UserRequestProcessed(message.UserId);
+            }
         }
     }
 
@@ -83,11 +97,11 @@ public class MessagesSenderService
             case TextMessage t:
                 await _bot.SendTextMessageAsync(t.UserId, t.Text, replyMarkup: t.ReplyMarkup);
                 break;
-            case ComicMessage i:
-                string date = DateUtils.ConvertDate(i.Comic.PublicationDate, i.Language);
-                string caption = $"[{date}]({i.Comic.Url})";
-                InputFileStream inputFile = new(i.Comic.ImageStream, i.Comic.PublicationDate.ToShortDateString());
-                await _bot.SendPhotoAsync(i.UserId, inputFile, caption: caption, parseMode: ParseMode.Markdown);
+            case ComicMessage c:
+                string date = DateUtils.ConvertDate(c.Comic.PublicationDate, c.Language);
+                string caption = $"[{date}]({c.Comic.Url})";
+                InputFileStream inputFile = new(c.Comic.ImageStream, c.Comic.PublicationDate.ToShortDateString());
+                await _bot.SendPhotoAsync(c.UserId, inputFile, caption: caption, parseMode: ParseMode.Markdown);
                 break;
         }
     }

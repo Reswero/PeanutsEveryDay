@@ -28,15 +28,34 @@ public static class MessageHandler
             return;
         }
 
+        long userId = message.From!.Id;
+
+        if (AntiSpamService.IsUserRequestInProcess(userId))
+        {
+            return;
+        }
+        AntiSpamService.ProcessUserRequest(userId);
+
+        try
+        {
+            await ProcessAsync(userId, message, cancellationToken);
+        }
+        catch
+        {
+            AntiSpamService.UserRequestProcessed(userId);
+            throw;
+        }
+    }
+
+    private static async Task ProcessAsync(long userId, Message message, CancellationToken cancellationToken)
+    {
         using var scope = _serviceProvider.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IUsersRepository>();
 
-        long chatId = message.From!.Id;
-        var user = await repository.GetAsync(chatId, cancellationToken);
-
+        var user = await repository.GetAsync(userId, cancellationToken);
         if (user is null)
         {
-            user = Dom.User.Create(chatId, message.From.FirstName, message.From.Username, message.From.LanguageCode);
+            user = Dom.User.Create(userId, message.From.FirstName, message.From.Username, message.From.LanguageCode);
             await repository.AddAsync(user, cancellationToken);
         }
 

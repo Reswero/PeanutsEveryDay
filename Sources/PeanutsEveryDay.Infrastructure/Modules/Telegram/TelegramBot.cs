@@ -38,7 +38,7 @@ public class TelegramBot : IUpdateHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "{Error}", ex.Message);
+            _logger.LogError(ex, "An error occurred while processing a user request. {Error}", ex.Message);
         }
     }
 
