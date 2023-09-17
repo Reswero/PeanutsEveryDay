@@ -111,6 +111,7 @@ public static class Installer
         var senderService = provider.GetRequiredService<MessagesSenderService>();
 
         MainMenu.Init(senderService);
+        CommandMenu.Init(senderService);
         KeyboardMenu.Init(senderService);
         NextComic.Init(comicsService, senderService);
         ComicByDate.Init(comicsService, senderService);
