@@ -13,7 +13,8 @@ using PeanutsEveryDay.Infrastructure.Modules.Repositories;
 using PeanutsEveryDay.Infrastructure.Modules.Services;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
-using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.En;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.Ru;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Handlers;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Utils;
@@ -65,8 +66,9 @@ public static class Installer
         });
         services.AddSingleton<MessagesSenderService>(provider =>
         {
+            var logger = provider.GetRequiredService<ILogger<MessagesSenderService>>();
             var botClient = provider.GetRequiredService<TelegramBot>().Client;
-            return new(botClient);
+            return new(logger, botClient);
         });
 
         services.AddCommandDictionaries();

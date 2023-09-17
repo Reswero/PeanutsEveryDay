@@ -24,7 +24,7 @@ public static class DateUtils
 
     public static DateOnly? TryParseDate(string date, LanguageCode language)
     {
-        bool parsed = false;
+        bool parsed;
         DateOnly dateOnly;
 
         if (language == LanguageCode.Ru)

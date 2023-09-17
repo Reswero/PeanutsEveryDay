@@ -1,6 +1,6 @@
 ﻿using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.Abstractions;
 
-namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
+namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.En;
 
 public class EnAnswerDictionary : AnswerDictionary
 {
