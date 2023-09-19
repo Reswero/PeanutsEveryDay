@@ -112,5 +112,9 @@ public static class MessageHandler
                 _messagesSenderService.EnqueueMessage(new TextMessage(user.Id, answerDictionary.WrongDateFormat));
             }
         }
+        else
+        {
+            AntiSpamService.UserRequestProcessed(userId);
+        }
     }
 }

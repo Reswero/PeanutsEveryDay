@@ -4,7 +4,16 @@ namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.Ru;
 
 public class RuAnswerDictionary : AnswerDictionary
 {
-    public override string Greetings { get; } = "Привет! :)";
+    public override string Greetings { get; } =
+        """
+        Привет!
+        Я бот, который будет присылать тебе комиксы про Чарли Брауна и его друзей.
+
+        На русский язык переведены не все комиксы, поэтому начиная с определенной даты комиксы будут на английском языке
+
+        Для получения информации по доступным командам используй:
+        /help
+        """;
     public override string HelpInformation { get; } =
         """
         Доступные команды:

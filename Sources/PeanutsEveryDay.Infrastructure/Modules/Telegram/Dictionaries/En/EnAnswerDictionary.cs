@@ -4,7 +4,14 @@ namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.En;
 
 public class EnAnswerDictionary : AnswerDictionary
 {
-    public override string Greetings { get; } = "Hello! :)";
+    public override string Greetings { get; } =
+        """
+        Hi!
+        I am a bot that will send you comics about Charlie Brown and his friends.
+
+        For information on available commands use:
+        /help
+        """;
     public override string HelpInformation { get; } =
         """
         Available commands:
