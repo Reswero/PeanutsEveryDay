@@ -113,6 +113,7 @@ public static class Installer
         MainMenu.Init(senderService);
         CommandMenu.Init(senderService);
         KeyboardMenu.Init(senderService);
+        HelpInfo.Init(senderService);
         NextComic.Init(comicsService, senderService);
         ComicByDate.Init(comicsService, senderService);
     }

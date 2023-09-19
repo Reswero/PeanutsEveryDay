@@ -78,6 +78,10 @@ public static class MessageHandler
             var callbackDictionary = scope.ServiceProvider.GetRequiredService<CallbackDictionaryResolver>().Invoke(user.Language);
             await MainMenu.SendAsync(user, callbackDictionary, cancellationToken);
         }
+        else if (message.Text == commandDictionary.Help)
+        {
+            await HelpInfo.SendAsync(user, answerDictionary, cancellationToken);
+        }
         else if (message.Text.StartsWith(commandDictionary.ComicByDate))
         {
             string textDate = message.Text[commandDictionary.ComicByDate.Length..];

@@ -3,6 +3,7 @@
 public abstract class CommandDictionary
 {
     public string Start = "/start";
+    public string Help = "/help";
     public string SetMenu = "/setmenu";
     public string ComicByDate = "/date";
     public string SetDate = "/setdate";
