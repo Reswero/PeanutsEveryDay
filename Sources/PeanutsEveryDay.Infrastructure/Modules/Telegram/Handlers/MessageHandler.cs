@@ -89,6 +89,7 @@ public static class MessageHandler
         else if (message.Text == commandDictionary.StopSending)
         {
             await StopSending.ExecuteAsync(user, answerDictionary, cancellationToken);
+            await repository.UpdateAsync(user, cancellationToken);
         }
         else if (message.Text!.StartsWith(commandDictionary.ComicByDate))
         {

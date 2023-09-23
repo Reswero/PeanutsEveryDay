@@ -4,26 +4,26 @@ namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.Ru;
 
 public class RuCallbackDictionary : CallbackDictionary
 {
-    public override string MainMenu => "Меню";
-    public override string Progress => "Прогресс";
-    public override string Settings => "Настройки";
-    public override string Hide => "Скрыть";
-    public override string Back => "Назад";
+    public override string MainMenu => "Меню 📋";
+    public override string Progress => "Прогресс 📈";
+    public override string Settings => "Настройки ⚙";
+    public override string Hide => "Скрыть ❎";
+    public override string Back => "Назад ↩";
 
     public override string ProgressTemplate =>
             """
-            Прогресс
+            Прогресс 📈
 
             Всего просмотрено комиксов: {0}
             Текущая дата: {1}
             Просмотрено {2} комиксов из ~{3}
             """;
 
-    public override string Sources => "Источники";
-    public override string SourcesInfo => "Информация";
+    public override string Sources => "Источники 👀";
+    public override string SourcesInfo => "Информация ℹ";
     public override string SourcesInfoTemplate =>
         """
-        Информация
+        Информация ℹ
 
         [Acomics](https://acomics.ru/~peanuts) - оригинальные переведенные комиксы
         [Acomics Begins](https://acomics.ru/~peanutsbegins) - переведенный цветной перезапуск первых комиксов
@@ -36,7 +36,7 @@ public class RuCallbackDictionary : CallbackDictionary
         [Авторы русского перевода](https://vk.com/ruspeanuts)
         """;
 
-    public override string SendingPeriod => "Период рассылки";
+    public override string SendingPeriod => "Период рассылки 🕒";
     public override string EveryHour => "Каждый час";
     public override string EveryDay => "Каждый день";
 }

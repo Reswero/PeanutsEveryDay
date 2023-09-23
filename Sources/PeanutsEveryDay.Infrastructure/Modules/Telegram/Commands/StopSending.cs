@@ -18,6 +18,6 @@ public class StopSending
     {
         user.Settings.SetPeriod(Abstraction.PeriodType.None);
 
-        _senderService.EnqueueMessage(new TextMessage(user.Id, answerDictionary.Greetings));
+        _senderService.EnqueueMessage(new TextMessage(user.Id, answerDictionary.SendingStopped));
     }
 }
