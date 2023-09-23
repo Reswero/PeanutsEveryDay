@@ -22,10 +22,12 @@ public class EnAnswerDictionary : AnswerDictionary
         /next - get next comic
         /date 12/31/2000 - get comic by date
         /setdate 12/31/2000 - set the date from which the comics will continue to be received
+        /stop - stop sending comics
         """;
     public override string KeyboardInstalled { get; } = "Keyboard installed!";
     public override string NoComicByDate { get; } = "There is no comic for the date listed :(";
     public override string ComicsOut { get; } = "Comics are out :(";
+    public override string SendingStopped { get; } = "Sending of comics has been stopped!";
     public override string NeededAtLeastOneSource { get; } = "At least one comic source must be selected!";
     public override string WrongDateFormat { get; } =
         """

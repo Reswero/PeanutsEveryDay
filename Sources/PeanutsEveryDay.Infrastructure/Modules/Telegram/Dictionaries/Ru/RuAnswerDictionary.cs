@@ -24,10 +24,12 @@ public class RuAnswerDictionary : AnswerDictionary
         /next - получить следующий комикс
         /date 31.12.2000 - получение комикса по дате
         /setdate 31.12.2000 - установка даты с которой продолжится получение комиксов
+        /stop - остановить рассылку комиксов
         """;
     public override string KeyboardInstalled { get; } = "Клавиатура установлена!";
     public override string NoComicByDate { get; } = "Нет комикса по указанной дате :(";
     public override string ComicsOut { get; } = "Комиксы закончились :(";
+    public override string SendingStopped { get; } = "Рассылка комиксов остановлена!";
     public override string NeededAtLeastOneSource { get; } = "Должен быть выбран хотя бы один источник с комиксами!";
     public override string WrongDateFormat { get; } =
         """

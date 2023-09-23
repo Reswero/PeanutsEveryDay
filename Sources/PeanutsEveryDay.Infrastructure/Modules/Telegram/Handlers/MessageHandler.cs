@@ -86,6 +86,10 @@ public static class MessageHandler
         {
             await HelpInfo.SendAsync(user, answerDictionary, cancellationToken);
         }
+        else if (message.Text == commandDictionary.StopSending)
+        {
+            await StopSending.ExecuteAsync(user, answerDictionary, cancellationToken);
+        }
         else if (message.Text!.StartsWith(commandDictionary.ComicByDate))
         {
             string textDate = message.Text[commandDictionary.ComicByDate.Length..];
