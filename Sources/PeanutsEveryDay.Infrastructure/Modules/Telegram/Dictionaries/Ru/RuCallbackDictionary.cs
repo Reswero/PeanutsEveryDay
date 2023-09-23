@@ -20,7 +20,23 @@ public class RuCallbackDictionary : CallbackDictionary
             """;
 
     public override string Sources => "Источники";
-    public override string Period => "Период";
+    public override string SourcesInfo => "Информация";
+    public override string SourcesInfoTemplate =>
+        """
+        Информация
+
+        [Acomics](https://acomics.ru/~peanuts) - оригинальные переведенные комиксы
+        [Acomics Begins](https://acomics.ru/~peanutsbegins) - переведенный цветной перезапуск первых комиксов
+        [Gocomics](https://www.gocomics.com/peanuts) - оригинальные комиксы на английском языке
+        [Gocomics Begins](https://www.gocomics.com/peanuts-begins) - цветной перезапуск первых комиксов на английском языке
+
+        Не все оригинальные комиксы имеют цветные версии.
+        Если стиль или язык комиксов изменился, значит в источнике закончились комиксы.
+
+        [Авторы русского перевода](https://vk.com/ruspeanuts)
+        """;
+
+    public override string SendingPeriod => "Период рассылки";
     public override string EveryHour => "Каждый час";
     public override string EveryDay => "Каждый день";
 }

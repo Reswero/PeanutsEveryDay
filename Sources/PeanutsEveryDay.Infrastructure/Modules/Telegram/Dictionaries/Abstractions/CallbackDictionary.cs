@@ -13,7 +13,10 @@ public abstract class CallbackDictionary
     public abstract string ProgressTemplate { get; }
 
     public abstract string Sources { get; }
-    public abstract string Period { get; }
+    public abstract string SourcesInfo { get; }
+    public abstract string SourcesInfoTemplate { get; }
+
+    public abstract string SendingPeriod { get; }
     public abstract string EveryHour { get; }
     public abstract string EveryDay { get; }
 }

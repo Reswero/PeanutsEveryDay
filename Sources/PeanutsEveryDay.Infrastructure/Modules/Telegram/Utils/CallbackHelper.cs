@@ -50,6 +50,7 @@ public static class CallbackHelper
             CallbackKey.Progress => GetProgressMenu(user, dictionary),
             CallbackKey.Settings => GetSettingsMenu(dictionary),
             CallbackKey.Sources => GetSourcesMenu(user, dictionary),
+            CallbackKey.SourcesInfo => GetSourcesInfoMenu(dictionary),
             CallbackKey.Period => GetPeriodMenu(user.Settings, dictionary),
             _ => (null, null),
         };
@@ -95,7 +96,7 @@ public static class CallbackHelper
         InlineKeyboardMarkup keyboardMarkup = new(new[]
         {
             new[] { InlineKeyboardButton.WithCallbackData(dictionary.Sources, CallbackKey.Sources) },
-            new[] { InlineKeyboardButton.WithCallbackData(dictionary.Period, CallbackKey.Period) },
+            new[] { InlineKeyboardButton.WithCallbackData(dictionary.SendingPeriod, CallbackKey.Period) },
             new[] { InlineKeyboardButton.WithCallbackData(dictionary.Back, CallbackKey.MainMenu) }
         });
 
@@ -128,10 +129,22 @@ public static class CallbackHelper
         {
             new[] { InlineKeyboardButton.WithCallbackData("Gocomics (EN)" + gcm, CallbackKey.GocomicsSource) },
             new[] { InlineKeyboardButton.WithCallbackData("Gocomics Begins (EN)" + gcmB, CallbackKey.GocomicsBeginsSource) },
+            new[] { InlineKeyboardButton.WithCallbackData(dictionary.SourcesInfo, CallbackKey.SourcesInfo) },
             new[] { InlineKeyboardButton.WithCallbackData(dictionary.Back, CallbackKey.Settings) }
         });
 
         InlineKeyboardMarkup keyboardMarkup = new(buttons);
+        return (template, keyboardMarkup);
+    }
+
+    private static (string, InlineKeyboardMarkup) GetSourcesInfoMenu(CallbackDictionary dictionary)
+    {
+        string template = dictionary.SourcesInfoTemplate;
+        InlineKeyboardMarkup keyboardMarkup = new(new[]
+        {
+            new[] { InlineKeyboardButton.WithCallbackData(dictionary.Back, CallbackKey.Sources) }
+        });
+
         return (template, keyboardMarkup);
     }
 
@@ -140,7 +153,7 @@ public static class CallbackHelper
         string? eh = settings.Period.HasFlag(PeriodType.EveryHour) ? dictionary.SelectedItemLabel : null;
         string? ed = settings.Period.HasFlag(PeriodType.EveryDay) ? dictionary.SelectedItemLabel : null;
 
-        string template = dictionary.Period;
+        string template = dictionary.SendingPeriod;
         InlineKeyboardMarkup keyboardMarkup = new(new[]
         {
             new[] { InlineKeyboardButton.WithCallbackData(dictionary.EveryHour + eh, CallbackKey.EveryHourPeriod) },

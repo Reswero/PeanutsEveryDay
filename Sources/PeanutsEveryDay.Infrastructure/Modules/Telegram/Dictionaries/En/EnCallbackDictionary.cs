@@ -20,7 +20,16 @@ public class EnCallbackDictionary : CallbackDictionary
             """;
 
     public override string Sources => "Sources";
-    public override string Period => "Period";
+    public override string SourcesInfo => "Information";
+    public override string SourcesInfoTemplate =>
+        """
+        Information
+
+        [Gocomics](https://www.gocomics.com/peanuts) - original comics
+        [Gocomics Begins](https://www.gocomics.com/peanuts-begins) - a color relaunch of the first original comics
+        """;
+
+    public override string SendingPeriod => "Sending Period";
     public override string EveryHour => "Every hour";
     public override string EveryDay => "Every day";
 }
