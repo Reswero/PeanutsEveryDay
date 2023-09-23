@@ -62,11 +62,9 @@ public static class MessageHandler
         var commandDictionary = scope.ServiceProvider.GetRequiredService<CommandDictionaryResolver>().Invoke(user.Language);
         var answerDictionary = scope.ServiceProvider.GetRequiredService<AnswerDictionaryResolver>().Invoke(user.Language);
 
-        if (message.Text == commandDictionary.Start ||
-            message.Text == commandDictionary.SetMenu)
+        if (message.Text == commandDictionary.Start)
         {
-            await KeyboardMenu.SendAsync(user, commandDictionary, answerDictionary, cancellationToken);
-            await CommandMenu.SendAsync(user, cancellationToken);
+            await Start.SendAsync(user, commandDictionary, answerDictionary, cancellationToken);
         }
         else if (message.Text == commandDictionary.NextComic ||
             message.Text == commandDictionary.Next)

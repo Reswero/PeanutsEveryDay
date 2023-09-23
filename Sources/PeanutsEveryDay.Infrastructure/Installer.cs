@@ -110,6 +110,7 @@ public static class Installer
         var comicsService = provider.GetRequiredService<IComicsService>();
         var senderService = provider.GetRequiredService<MessagesSenderService>();
 
+        Start.Init(senderService);
         MainMenu.Init(senderService);
         CommandMenu.Init(senderService);
         KeyboardMenu.Init(senderService);
