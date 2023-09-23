@@ -55,7 +55,8 @@ public class UserSettings
     public void SetPeriod(PeriodType period)
     {
         if ((Period == PeriodType.EveryHour && period == PeriodType.EveryHour) ||
-            (Period == PeriodType.EveryDay && period == PeriodType.EveryDay))
+            (Period == PeriodType.EveryDay && period == PeriodType.EveryDay) ||
+            period == PeriodType.None)
         {
             _period = PeriodType.None;
         }

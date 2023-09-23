@@ -88,20 +88,25 @@ public class MessagesSenderService
     {
         switch (message)
         {
-            case EditMessage e:
-                await _bot.EditMessageTextAsync(e.UserId, e.MessageId, e.Text, replyMarkup: e.ReplyMarkup as InlineKeyboardMarkup);
-                break;
-            case DeleteMessage d:
-                await _bot.DeleteMessageAsync(d.UserId, d.MessageId);
-                break;
-            case TextMessage t:
-                await _bot.SendTextMessageAsync(t.UserId, t.Text, replyMarkup: t.ReplyMarkup);
-                break;
             case ComicMessage c:
                 string date = DateUtils.ConvertDate(c.Comic.PublicationDate, c.Language);
                 string caption = $"[{date}]({c.Comic.Url})";
                 InputFileStream inputFile = new(c.Comic.ImageStream, c.Comic.PublicationDate.ToShortDateString());
                 await _bot.SendPhotoAsync(c.UserId, inputFile, caption: caption, parseMode: ParseMode.Markdown);
+                break;
+            case EditMessage e:
+                await _bot.EditMessageTextAsync(e.UserId, e.MessageId, e.Text, replyMarkup: e.ReplyMarkup as InlineKeyboardMarkup,
+                    parseMode: ParseMode.Markdown, disableWebPagePreview: true);
+                break;
+            case DeleteMessage d:
+                await _bot.DeleteMessageAsync(d.UserId, d.MessageId);
+                break;
+            case TextMessage t:
+                await _bot.SendTextMessageAsync(t.UserId, t.Text, replyMarkup: t.ReplyMarkup, parseMode: ParseMode.Markdown,
+                    disableWebPagePreview: true);
+                break;
+            case CommandListMessage l:
+                await _bot.SetMyCommandsAsync(l.Commands, l.CommandsScope);
                 break;
         }
     }

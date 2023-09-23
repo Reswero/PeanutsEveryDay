@@ -8,6 +8,7 @@ public static class CallbackKey
     public const string AcomicsBeginsSource = $"{SourcePrefix}acmB";
     public const string GocomicsSource = $"{SourcePrefix}gcm";
     public const string GocomicsBeginsSource = $"{SourcePrefix}gcmB";
+    public const string SourcesInfo = "srcs_inf";
 
     public const string Period = "period";
     public const string PeriodPrefix = "prd_";

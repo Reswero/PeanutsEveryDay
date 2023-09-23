@@ -110,10 +110,14 @@ public static class Installer
         var comicsService = provider.GetRequiredService<IComicsService>();
         var senderService = provider.GetRequiredService<MessagesSenderService>();
 
-        MainMenu.Init(senderService);
-        KeyboardMenu.Init(senderService);
-        NextComic.Init(comicsService, senderService);
         ComicByDate.Init(comicsService, senderService);
+        CommandMenu.Init(senderService);
+        HelpInfo.Init(senderService);
+        KeyboardMenu.Init(senderService);
+        MainMenu.Init(senderService);
+        NextComic.Init(comicsService, senderService);
+        Start.Init(senderService);
+        StopSending.Init(senderService);
     }
 
     private static void AddCommandDictionaries(this IServiceCollection services)

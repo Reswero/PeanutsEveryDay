@@ -1,7 +1,6 @@
 ﻿using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Application.Modules.Services;
 using PeanutsEveryDay.Domain.Models;
-using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.Abstractions;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Messages;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
