@@ -12,7 +12,8 @@ public static class CommandMenu
         new BotCommand() { Command = "help", Description = "Help" },
         new BotCommand() { Command = "keyboard", Description = "Keyboard" },
         new BotCommand() { Command = "menu", Description = "Menu" },
-        new BotCommand() { Command = "next", Description = "Next" }
+        new BotCommand() { Command = "next", Description = "Next" },
+        new BotCommand() { Command = "stop", Description = "Stop" }
     };
 
     private static MessagesSenderService _senderService;
