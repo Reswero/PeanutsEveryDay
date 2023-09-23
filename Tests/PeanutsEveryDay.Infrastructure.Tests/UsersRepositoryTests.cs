@@ -48,7 +48,7 @@ public class UsersRepositoryTests
 
         UserProgress progressDb = new() { UserId = 1 };
         UserSettings settingsDb = new() { UserId = 1 };
-        User userDb = new() { Id = 1, FirstName = "Test", Progress = progressDb, Settings = settingsDb };
+        User userDb = new() { Id = 1, FirstName = "Test", NativeLanguage = "ru", Progress = progressDb, Settings = settingsDb };
         await _db.Users.AddAsync(userDb);
         await _db.SaveChangesAsync();
 
@@ -73,7 +73,7 @@ public class UsersRepositoryTests
 
         UserProgress progressDb = new() { UserId = 1 };
         UserSettings settingsDb = new() { UserId = 1 };
-        User userDb = new() { Id = 1, FirstName = "Test", Progress = progressDb, Settings = settingsDb };
+        User userDb = new() { Id = 1, FirstName = "Test", NativeLanguage = "ru", Progress = progressDb, Settings = settingsDb };
         await _db.Users.AddAsync(userDb);
         await _db.SaveChangesAsync();
 
@@ -81,7 +81,7 @@ public class UsersRepositoryTests
 
         UserProgress progress = new() { UserId = userDb.Id, TotalComicsWatched = 20 };
         UserSettings settings = new() { UserId = userDb.Id };
-        User user = new() { Id = userDb.Id, FirstName = "Test2", Progress = progressDb, Settings = settingsDb };
+        User user = new() { Id = userDb.Id, FirstName = "Test2", NativeLanguage = "ru", Progress = progressDb, Settings = settingsDb };
 
         // Act
         await repository.UpdateAsync(user);

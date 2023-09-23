@@ -89,7 +89,7 @@ public class PeanutsContextTests
         // Arrange
         UserProgress progressDb = new() { UserId = 1 };
         UserSettings settingsDb = new() { UserId = 1 };
-        User userDb = new() { Id = 1, FirstName = "Test", Progress = progressDb, Settings = settingsDb };
+        User userDb = new() { Id = 1, FirstName = "Test", NativeLanguage = "ru", Progress = progressDb, Settings = settingsDb };
 
         // Act
         await _db.AddAsync(userDb);

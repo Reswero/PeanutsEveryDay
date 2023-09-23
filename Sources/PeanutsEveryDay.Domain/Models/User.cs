@@ -8,6 +8,7 @@ public class User
     public required string FirstName { get; init; }
     public string? Username { get; init; }
 
+    public required string NativeLanguage { get; init; }
     public LanguageCode Language { get; init; }
 
     public required UserProgress Progress { get; init; }
@@ -34,6 +35,7 @@ public class User
             Id = id,
             FirstName = firstName,
             Username = username,
+            NativeLanguage = language ?? "en",
             Language = languageCode,
             Progress = progress,
             Settings = settings
