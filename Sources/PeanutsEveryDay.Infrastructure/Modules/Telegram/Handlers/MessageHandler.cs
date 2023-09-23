@@ -66,6 +66,10 @@ public static class MessageHandler
         {
             await Start.SendAsync(user, commandDictionary, answerDictionary, cancellationToken);
         }
+        else if (message.Text == commandDictionary.SetKeyboard)
+        {
+            await KeyboardMenu.SendAsync(user, commandDictionary, answerDictionary, cancellationToken);
+        }
         else if (message.Text == commandDictionary.NextComic ||
             message.Text == commandDictionary.Next)
         {

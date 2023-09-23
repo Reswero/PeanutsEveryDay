@@ -19,12 +19,13 @@ public class RuAnswerDictionary : AnswerDictionary
         Доступные команды:
 
         /help - информация о всех командах
-        /setmenu - установка клавиатуры
+        /keyboard - установка клавиатуры
         /menu - меню настроек
         /next - получить следующий комикс
         /date 31.12.2000 - получение комикса по дате
         /setdate 31.12.2000 - установка даты с которой продолжится получение комиксов
         """;
+    public override string KeyboardInstalled { get; } = "Клавиатура установлена!";
     public override string NoComicByDate { get; } = "Нет комикса по указанной дате :(";
     public override string ComicsOut { get; } = "Комиксы закончились :(";
     public override string NeededAtLeastOneSource { get; } = "Должен быть выбран хотя бы один источник с комиксами!";

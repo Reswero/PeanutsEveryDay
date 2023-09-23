@@ -4,6 +4,7 @@ public abstract class AnswerDictionary
 {
     public abstract string Greetings { get; }
     public abstract string HelpInformation { get; }
+    public abstract string KeyboardInstalled { get; }
     public abstract string NoComicByDate { get; }
     public abstract string ComicsOut { get; }
     public abstract string NeededAtLeastOneSource { get; }

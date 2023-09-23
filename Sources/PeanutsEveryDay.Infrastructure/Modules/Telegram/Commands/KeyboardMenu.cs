@@ -19,6 +19,6 @@ public static class KeyboardMenu
         AnswerDictionary answerDictionary, CancellationToken cancellationToken)
     {
         var replyKeyboard = KeyboardHelper.CreateReplyKeyboard(commandDictionary);
-        _senderService.EnqueueMessage(new TextMessage(user.Id, answerDictionary.Greetings, replyKeyboard));
+        _senderService.EnqueueMessage(new TextMessage(user.Id, answerDictionary.KeyboardInstalled, replyKeyboard));
     }
 }
