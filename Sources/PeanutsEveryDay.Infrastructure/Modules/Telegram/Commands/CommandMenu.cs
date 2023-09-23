@@ -9,8 +9,10 @@ public static class CommandMenu
 {
     private static readonly List<BotCommand> _commands = new()
     {
-        new BotCommand() { Command = "setmenu", Description = "Menu" },
-        new BotCommand() { Command = "help", Description = "Help" }
+        new BotCommand() { Command = "help", Description = "Help" },
+        new BotCommand() { Command = "setmenu", Description = "Set Menu" },
+        new BotCommand() { Command = "menu", Description = "Menu" },
+        new BotCommand() { Command = "next", Description = "Next" }
     };
 
     private static MessagesSenderService _senderService;

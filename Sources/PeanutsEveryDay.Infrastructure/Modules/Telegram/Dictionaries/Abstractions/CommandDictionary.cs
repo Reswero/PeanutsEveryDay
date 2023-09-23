@@ -7,6 +7,8 @@ public abstract class CommandDictionary
     public string SetMenu = "/setmenu";
     public string ComicByDate = "/date";
     public string SetDate = "/setdate";
+    public string Next = "/next";
+    public string MenuCommand = "/menu";
 
     public abstract string NextComic { get; }
     public abstract string Menu { get; }

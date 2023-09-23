@@ -68,12 +68,14 @@ public static class MessageHandler
             await KeyboardMenu.SendAsync(user, commandDictionary, answerDictionary, cancellationToken);
             await CommandMenu.SendAsync(user, cancellationToken);
         }
-        else if (message.Text == commandDictionary.NextComic)
+        else if (message.Text == commandDictionary.NextComic ||
+            message.Text == commandDictionary.Next)
         {
             await NextComic.SendAsync(user, answerDictionary, cancellationToken);
             await repository.UpdateAsync(user, cancellationToken);
         }
-        else if (message.Text == commandDictionary.Menu)
+        else if (message.Text == commandDictionary.Menu ||
+            message.Text == commandDictionary.MenuCommand)
         {
             var callbackDictionary = scope.ServiceProvider.GetRequiredService<CallbackDictionaryResolver>().Invoke(user.Language);
             await MainMenu.SendAsync(user, callbackDictionary, cancellationToken);
@@ -82,7 +84,7 @@ public static class MessageHandler
         {
             await HelpInfo.SendAsync(user, answerDictionary, cancellationToken);
         }
-        else if (message.Text.StartsWith(commandDictionary.ComicByDate))
+        else if (message.Text!.StartsWith(commandDictionary.ComicByDate))
         {
             string textDate = message.Text[commandDictionary.ComicByDate.Length..];
             var date = DateUtils.TryParseDate(textDate, user.Language);
