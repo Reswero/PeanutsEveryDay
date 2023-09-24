@@ -19,6 +19,8 @@ using PeanutsEveryDay.Infrastructure.Modules.Telegram.Handlers;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Utils;
 using PeanutsEveryDay.Infrastructure.Persistence;
+using Serilog;
+using Serilog.Events;
 
 namespace PeanutsEveryDay.Infrastructure;
 
@@ -26,6 +28,18 @@ public static class Installer
 {
     public static IServiceCollection RegisterServices(this IServiceCollection services)
     {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+            .WriteTo.Console()
+            .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day, flushToDiskInterval: TimeSpan.FromSeconds(5))
+            .CreateLogger();
+
+        services.AddLogging(builder =>
+        {
+            builder.AddSerilog(dispose: true);
+        });
+
         IConfiguration configuration = new ConfigurationBuilder()
             .AddJsonFile("settings.json")
             .Build();
@@ -35,14 +49,6 @@ public static class Installer
         services.AddDbContext<PeanutsContext>(opt =>
         {
             opt.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
-        });
-
-        services.AddLogging(cfg =>
-        {
-            cfg.ClearProviders();
-            cfg.SetMinimumLevel(LogLevel.Information);
-            cfg.AddConsole();
-            cfg.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
         });
 
         services.AddScoped<IComicsParser, AcomicsParser>();
