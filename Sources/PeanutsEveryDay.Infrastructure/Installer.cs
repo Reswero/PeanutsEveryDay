@@ -89,8 +89,7 @@ public static class Installer
         using var scope = provider.CreateScope();
         using var db = scope.ServiceProvider.GetRequiredService<PeanutsContext>();
 
-        db.Database.EnsureDeleted();
-        db.Database.EnsureCreated();
+        db.Database.Migrate();
     }
 
     public static void InitializeTelegramBot(this IServiceProvider provider)
