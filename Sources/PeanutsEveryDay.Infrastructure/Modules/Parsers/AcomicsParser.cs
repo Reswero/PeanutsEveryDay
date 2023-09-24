@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Application.Exceptions;
 using PeanutsEveryDay.Application.Modules.Parsers;
@@ -22,9 +23,15 @@ public class AcomicsParser : IComicsParser
     private const string _xpathToRootUrl = "//div[@class='description']//a";
     private const string _xpathToComicsNumber = "//span[@class='issueNumber']";
 
+    private readonly ILogger<AcomicsParser> _logger;
     private readonly TimeSpan _defaultRequestDelay = TimeSpan.FromMilliseconds(10);
 
     private ParserState _state = new();
+
+    public AcomicsParser(ILogger<AcomicsParser> logger)
+    {
+        _logger = logger;
+    }
 
     public void SetState(ParserState state)
     {
@@ -61,28 +68,43 @@ public class AcomicsParser : IComicsParser
 
         while (lastParsedComic < lastComicNumber)
         {
-            var comicUrl = $"{baseUrl}{lastParsedComic + 1}";
+            bool parsed = false;
+            ParsedComic? parsedComic = null;
 
-            using HttpResponseMessage response = await client.GetAsync(comicUrl, cancellationToken);
-
-            if (response.StatusCode == HttpStatusCode.OK)
+            try
             {
-                var (date, src) = await GetPublicationDateAndSrcAsync(comicUrl, begins, cancellationToken);
+                var comicUrl = $"{baseUrl}{lastParsedComic + 1}";
+                using HttpResponseMessage response = await client.GetAsync(comicUrl, cancellationToken);
 
-                string comicImageUrl = $"{_baseUrl}{src}";
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var (date, src) = await GetPublicationDateAndSrcAsync(comicUrl, begins, cancellationToken);
 
-                using HttpResponseMessage imageResponse = await client.GetAsync(comicImageUrl, cancellationToken);
-                using Stream stream = await imageResponse.Content.ReadAsStreamAsync(cancellationToken);
+                    string comicImageUrl = $"{_baseUrl}{src}";
 
-                var sourceType = begins is true ? SourceType.AcomicsBegins : SourceType.Acomics;
+                    using HttpResponseMessage imageResponse = await client.GetAsync(comicImageUrl, cancellationToken);
+                    using Stream stream = await imageResponse.Content.ReadAsStreamAsync(cancellationToken);
 
-                attemptsCount = default;
-                lastParsedComic++;
-                requestDelay = _defaultRequestDelay;
+                    var sourceType = begins is true ? SourceType.AcomicsBegins : SourceType.Acomics;
 
-                _state.ChangeAcomics(lastParsedComic, begins);
+                    attemptsCount = default;
+                    lastParsedComic++;
+                    requestDelay = _defaultRequestDelay;
 
-                yield return new ParsedComic(date, sourceType, comicUrl, stream);
+                    _state.ChangeAcomics(lastParsedComic, begins);
+
+                    parsedComic = new ParsedComic(date, sourceType, comicUrl, stream);
+                    parsed = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("An exception occurred while parsing Acomics. {Error}", ex.Message);
+            }
+
+            if (parsed is true)
+            {
+                yield return parsedComic!;
             }
             else
             {

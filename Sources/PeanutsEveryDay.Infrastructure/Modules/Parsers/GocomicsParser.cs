@@ -6,6 +6,7 @@ using PeanutsEveryDay.Application.Modules.Parsers;
 using System.Net;
 using System.Runtime.CompilerServices;
 using PeanutsEveryDay.Domain.Models;
+using Microsoft.Extensions.Logging;
 
 namespace PeanutsEveryDay.Infrastructure.Modules.Parsers;
 
@@ -23,9 +24,15 @@ public class GocomicsParser : IComicsParser
     private const string _xpathToPeanutsBeginsImg
         = "//a[@title='Peanuts Begins']/picture[@class='item-comic-image']/img";
 
+    private readonly ILogger<GocomicsParser> _logger;
     private readonly TimeSpan _defaultRequestDelay = TimeSpan.FromMilliseconds(300);
 
     private ParserState _state = new();
+
+    public GocomicsParser(ILogger<GocomicsParser> logger)
+    {
+        _logger = logger;
+    }
 
     public void SetState(ParserState state)
     {
@@ -66,50 +73,65 @@ public class GocomicsParser : IComicsParser
 
         while (lastParsedComic < lastComicDate && currentComic <= lastComicDate)
         {
-            currentComic = currentComic.AddDays(1);
+            bool parsed = false;
+            ParsedComic? parsedComic = null;
 
-            var comicUrl
-                = $"{baseUrl}{currentComic.Year}/{currentComic.Month}/{currentComic.Day}";
-
-            using HttpResponseMessage status = await client.GetAsync(comicUrl, cancellationToken);
-
-            if (status.StatusCode == HttpStatusCode.OK)
+            try
             {
-                HtmlWeb web = new();
-                HtmlDocument doc = await web.LoadFromWebAsync(comicUrl, cancellationToken);
+                currentComic = currentComic.AddDays(1);
 
-                string comicImageSrc = doc.DocumentNode
-                    .SelectSingleNode(xpathToImg)
-                    .Attributes["src"]
-                    .Value;
+                var comicUrl
+                    = $"{baseUrl}{currentComic.Year}/{currentComic.Month}/{currentComic.Day}";
+                using HttpResponseMessage status = await client.GetAsync(comicUrl, cancellationToken);
 
-                using HttpResponseMessage response = await client.GetAsync(comicImageSrc, cancellationToken);
-                using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-
-                // Sometimes the image may not load correctly
-                if (stream.Length > 1024)
+                if (status.StatusCode == HttpStatusCode.OK)
                 {
-                    var sourceType = begins is true ? SourceType.GocomicsBegins : SourceType.Gocomics;
+                    HtmlWeb web = new();
+                    HtmlDocument doc = await web.LoadFromWebAsync(comicUrl, cancellationToken);
 
+                    string comicImageSrc = doc.DocumentNode
+                        .SelectSingleNode(xpathToImg)
+                        .Attributes["src"]
+                        .Value;
+
+                    using HttpResponseMessage response = await client.GetAsync(comicImageSrc, cancellationToken);
+                    using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+
+                    // Sometimes the image may not load correctly
+                    if (stream.Length > 1024)
+                    {
+                        var sourceType = begins is true ? SourceType.GocomicsBegins : SourceType.Gocomics;
+
+                        attemptsCount = default;
+                        skippedComics = default;
+                        lastParsedComic = currentComic;
+                        requestDelay = _defaultRequestDelay;
+
+                        _state.ChangeGocomics(lastParsedComic, begins);
+
+                        parsedComic = new ParsedComic(currentComic, sourceType, comicUrl, stream);
+                        parsed = true;
+                    }
+                }
+                else if (status.StatusCode == HttpStatusCode.Redirect)
+                {
                     attemptsCount = default;
-                    skippedComics = default;
-                    lastParsedComic = currentComic;
-                    requestDelay = _defaultRequestDelay;
-
-                    _state.ChangeGocomics(lastParsedComic, begins);
-
-                    yield return new ParsedComic(currentComic, sourceType, comicUrl, stream);
+                    skippedComics++;
                 }
             }
-            else if (status.StatusCode == HttpStatusCode.Redirect)
+            catch (Exception ex)
             {
-                attemptsCount = default;
-                skippedComics++;
+                currentComic = currentComic.AddDays(-1);
+                _logger.LogError("An exception occurred while parsing Gocomics. {Error}", ex.Message);
+            }
 
-                if (skippedComics > _maxSkippedComics)
-                {
-                    yield break;
-                }
+            if (parsed is true)
+            {
+                yield return parsedComic!;
+            }
+            else if (skippedComics > _maxSkippedComics)
+            {
+                yield break;
             }
             else
             {
