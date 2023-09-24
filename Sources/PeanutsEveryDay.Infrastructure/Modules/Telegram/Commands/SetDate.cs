@@ -4,7 +4,7 @@ namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
 
 public static class SetDate
 {
-    private static readonly DateOnly _firstComicDate = new(1950, 10, 02);
+    private static readonly DateOnly _minDate = new(1950, 10, 01);
 
     public static async Task ExecuteAsync(DateOnly date, User user, CancellationToken cancellationToken)
     {
@@ -13,9 +13,9 @@ public static class SetDate
         {
             date = currentDate;
         }
-        else if (date < _firstComicDate)
+        else if (date < _minDate)
         {
-            date = _firstComicDate;
+            date = _minDate;
         }
 
         user.Progress.SetDate(date);
