@@ -122,7 +122,7 @@ public class GocomicsParser : IComicsParser
             catch (Exception ex)
             {
                 currentComic = currentComic.AddDays(-1);
-                _logger.LogError("An exception occurred while parsing Gocomics. {Error}", ex.Message);
+                _logger.LogError(ex, "An exception occurred while parsing Gocomics. {Error}", ex.Message);
             }
 
             if (parsed is true)

@@ -99,7 +99,7 @@ public class AcomicsParser : IComicsParser
             }
             catch (Exception ex)
             {
-                _logger.LogError("An exception occurred while parsing Acomics. {Error}", ex.Message);
+                _logger.LogError(ex, "An exception occurred while parsing Acomics. {Error}", ex.Message);
             }
 
             if (parsed is true)

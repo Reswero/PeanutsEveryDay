@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFCore.BulkExtensions;
+using Microsoft.EntityFrameworkCore;
 using PeanutsEveryDay.Application.Modules.Repositories;
 using PeanutsEveryDay.Domain.Models;
 using PeanutsEveryDay.Infrastructure.Persistence;
@@ -22,8 +23,13 @@ public class ComicsRepository : IComicsRepository
 
     public async Task AddRangeAsync(IReadOnlyCollection<Comic> comics, CancellationToken cancellationToken = default)
     {
-        await _db.AddRangeAsync(comics, cancellationToken);
-        await _db.SaveChangesAsync(cancellationToken);
+        BulkConfig config = new()
+        {
+            PropertiesToIncludeOnUpdate = new List<string> { "" }
+        };
+
+        await _db.BulkInsertOrUpdateAsync(comics, config, cancellationToken: cancellationToken);
+        await _db.BulkSaveChangesAsync(cancellationToken: cancellationToken);
     }
 
     public async Task<IReadOnlyCollection<Comic>> GetAsync(DateOnly date, CancellationToken cancellationToken = default)
