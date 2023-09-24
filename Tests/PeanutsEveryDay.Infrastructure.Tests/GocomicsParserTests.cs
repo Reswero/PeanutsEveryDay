@@ -1,4 +1,5 @@
-﻿using PeanutsEveryDay.Abstraction;
+﻿using Microsoft.Extensions.Logging;
+using PeanutsEveryDay.Abstraction;
 using PeanutsEveryDay.Domain.Models;
 using PeanutsEveryDay.Infrastructure.Modules.Parsers;
 
@@ -10,8 +11,11 @@ public class GocomicsParserTests
     public async Task Peanuts_Comics_Parsed()
     {
         // Arrange
+        var logFactory = LoggerFactory.Create(cfg => cfg.SetMinimumLevel(LogLevel.Trace));
+        var logger = logFactory.CreateLogger<GocomicsParser>();
+
         ParserState state = new();
-        GocomicsParser parser = new();
+        GocomicsParser parser = new(logger);
         parser.SetState(state);
 
         var initComicDate = state.LastParsedGocomics;
@@ -33,8 +37,11 @@ public class GocomicsParserTests
     public async Task PeanutsBegins_Comics_Parsed()
     {
         // Arrange
+        var logFactory = LoggerFactory.Create(cfg => cfg.SetMinimumLevel(LogLevel.Trace));
+        var logger = logFactory.CreateLogger<GocomicsParser>();
+
         ParserState state = new();
-        GocomicsParser parser = new();
+        GocomicsParser parser = new(logger);
         parser.SetState(state);
 
         var initComicDate = state.LastParsedGocomicsBegins;

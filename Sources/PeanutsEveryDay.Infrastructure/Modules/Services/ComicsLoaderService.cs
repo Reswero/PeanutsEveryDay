@@ -19,7 +19,12 @@ public class ComicsLoaderService : IComicsLoaderService
     private readonly IComicsRepository _comicsRepository;
     private readonly IParserStateRepository _stateRepository;
 
-    private readonly BlockingCollection<Comic> _comicsBag = new();
+    private readonly TimeSpan _loadingDuration = TimeSpan.FromMinutes(30);
+    private readonly TimeSpan _restDuration = TimeSpan.FromMinutes(10);
+    private readonly int _savingInterval = (int) TimeSpan.FromMilliseconds(500).TotalMilliseconds;
+
+    private ParserState _state;
+    private BlockingCollection<Comic> _comicsBag;
 
     public ComicsLoaderService(ILogger<ComicsLoaderService> logger, IEnumerable<IComicsParser> parsers,
         IComicImageConverter converter, IComicFileSystemService fileSystemService,
@@ -33,22 +38,43 @@ public class ComicsLoaderService : IComicsLoaderService
         _stateRepository = stateRepository;
     }
 
-    public async Task LoadAsync(TimeSpan? executionDuration = null, CancellationToken cancellationToken = default)
+    public async Task StartLoadingAsync(CancellationToken cancellationToken = default)
+    {
+        _state = await _stateRepository.GetAsync(cancellationToken);
+
+        while (true)
+        {
+            CancellationTokenSource cts = new(_loadingDuration);
+
+            _logger.LogInformation("Comics loading started.");
+
+            _comicsBag = new();
+            await LoadAsync(cts.Token);
+
+            _logger.LogInformation("Comics loading ended.");
+
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            await Task.Delay(_restDuration, cancellationToken);
+        }
+    }
+
+    private async Task LoadAsync(CancellationToken cancellationToken = default)
     {
         Task saveTask = Task.Run(SaveComicsAsync);
-        var state = await _stateRepository.GetAsync(cancellationToken);
 
         _logger.LogInformation("Parser state loaded (acomics='{acomics}', acomicsBegins='{acomicsBegins}', " +
             "gocomics='{gocomics}', gocomicsBegins='{gocomicsBegins}').",
-            state.LastParsedAcomics, state.LastParsedAcomicsBegins, state.LastParsedGocomics, state.LastParsedGocomicsBegins);
+            _state.LastParsedAcomics, _state.LastParsedAcomicsBegins, _state.LastParsedGocomics, _state.LastParsedGocomicsBegins);
 
         List<Task> loadTasks = new(_parsers.Length * 2);
         foreach (var parser in _parsers)
         {
-            parser.SetState(state);
+            parser.SetState(_state);
 
-            var comicsTask = Task.Run(async () => await LoadComicsAsync(parser.ParseAsync(cancellationToken)), cancellationToken);
-            var beginsComicsTask = Task.Run(async () => await LoadComicsAsync(parser.ParseBeginsAsync(cancellationToken)), cancellationToken);
+            var comicsTask = Task.Run(async () => await LoadComicsAsync(parser.ParseAsync(), cancellationToken));
+            var beginsComicsTask = Task.Run(async () => await LoadComicsAsync(parser.ParseBeginsAsync(), cancellationToken));
 
             loadTasks.Add(comicsTask);
             loadTasks.Add(beginsComicsTask);
@@ -56,24 +82,18 @@ public class ComicsLoaderService : IComicsLoaderService
             _logger.LogInformation("Parser {Name} starts working.", parser.GetType().Name);
         }
 
-        try
-        {
-            var timeout = executionDuration is null ? -1 : (int)executionDuration.Value.TotalMilliseconds;
-            Task.WaitAll(loadTasks.ToArray(), timeout, cancellationToken);
-        }
-        finally
-        {
-            _comicsBag.CompleteAdding();
-            await saveTask;
-            await _stateRepository.AddOrUpdateAsync(state, cancellationToken);
+        Task.WaitAll(loadTasks.ToArray());
 
-            _logger.LogInformation("Parser state saved (acomics='{acomics}', acomicsBegins='{acomicsBegins}', " +
-                "gocomics='{gocomics}', gocomicsBegins='{gocomicsBegins}').",
-                state.LastParsedAcomics, state.LastParsedAcomicsBegins, state.LastParsedGocomics, state.LastParsedGocomicsBegins);
-        }
+        _comicsBag.CompleteAdding();
+        await saveTask;
+        await _stateRepository.AddOrUpdateAsync(_state);
+
+        _logger.LogInformation("Parser state saved (acomics='{acomics}', acomicsBegins='{acomicsBegins}', " +
+            "gocomics='{gocomics}', gocomicsBegins='{gocomicsBegins}').",
+            _state.LastParsedAcomics, _state.LastParsedAcomicsBegins, _state.LastParsedGocomics, _state.LastParsedGocomicsBegins);
     }
 
-    private async Task LoadComicsAsync(IAsyncEnumerable<ParsedComic> comics)
+    private async Task LoadComicsAsync(IAsyncEnumerable<ParsedComic> comics, CancellationToken cancellationToken)
     {
         try
         {
@@ -89,15 +109,17 @@ public class ComicsLoaderService : IComicsLoaderService
                     Url = parsedComic.Url
                 };
                 _comicsBag.Add(comic);
-                
 
-                _logger.LogTrace("Comic parsed (pubDate='{PublicationDate}', src={Source}, url='{Url}').",
+                _logger.LogTrace("Comic parsed (pubDate='{PublicationDate}', src='{Source}', url='{Url}').",
                     comic.PublicationDate, comic.Source, comic.Url);
+
+                if (cancellationToken.IsCancellationRequested)
+                    return;
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Parser exception occured. {Error}", ex.Message);
+            _logger.LogError(ex, "An exception occurred while loading comics. {Error}", ex.Message);
         }
     }
 
@@ -121,7 +143,7 @@ public class ComicsLoaderService : IComicsLoaderService
                 comics.Clear();
             }
 
-            await Task.Delay(500);
+            await Task.Delay(_savingInterval);
         }
 
         _logger.LogInformation("Total {Count} comics added.", totalComicsAdded);

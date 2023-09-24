@@ -16,7 +16,7 @@ internal class Program
         serviceProvider.InitializeTelegramBot();
 
         var loader = serviceProvider.GetRequiredService<IComicsLoaderService>();
-        await loader.LoadAsync(TimeSpan.FromMinutes(10));
+        await loader.StartLoadingAsync();
 
         Console.ReadLine();
     }
