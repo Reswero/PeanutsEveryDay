@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using PeanutsEveryDay.Application.Modules.Comics;
 using PeanutsEveryDay.Application.Modules.Converters;
 using PeanutsEveryDay.Application.Modules.Parsers;
 using PeanutsEveryDay.Application.Modules.Parsers.Models;
@@ -21,7 +22,7 @@ public class ComicsLoaderService : IComicsLoaderService
 
     private readonly TimeSpan _loadingDuration = TimeSpan.FromMinutes(30);
     private readonly TimeSpan _restDuration = TimeSpan.FromMinutes(10);
-    private readonly int _savingInterval = (int) TimeSpan.FromMilliseconds(500).TotalMilliseconds;
+    private readonly int _savingInterval = (int) TimeSpan.FromSeconds(5).TotalMilliseconds;
 
     private ParserState _state;
     private BlockingCollection<Comic> _comicsBag;
@@ -126,8 +127,9 @@ public class ComicsLoaderService : IComicsLoaderService
     private async Task SaveComicsAsync()
     {
         int totalComicsAdded = default;
+        ComicsComparer comparer = new();
 
-        List<Comic> comics = new(_parsers.Length * 4);
+        List<Comic> comics = new(_parsers.Length * 10);
         while (_comicsBag.IsCompleted == false)
         {
             while (_comicsBag.Count > 0)
@@ -135,7 +137,8 @@ public class ComicsLoaderService : IComicsLoaderService
 
             if (comics.Count > 0)
             {
-                await _comicsRepository.AddRangeAsync(comics);
+                var uniqueComics = comics.Distinct(comparer).ToList();
+                await _comicsRepository.AddRangeAsync(uniqueComics);
 
                 _logger.LogTrace("{Count} comics added to repository.", comics.Count);
                 totalComicsAdded += comics.Count;
