@@ -32,13 +32,30 @@ public class TelegramBot : IUpdateHandler
         try
         {
             if (update.Message is not null)
+            {
                 await MessageHandler.HandleAsync(update.Message, cancellationToken);
+            }
             else if (update.CallbackQuery is not null)
+            {
                 await CallbackHandler.HandleAsync(update.CallbackQuery, cancellationToken);
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while processing a user request. {Error}", ex.Message);
+            if (update.Message is not null && update.Message.Text is not null)
+            {
+                _logger.LogError(ex, "An exception occurred while processing a user message. Message: '{Text}'. {Error}",
+                    update.Message.Text, ex.Message);
+            }
+            else if (update.CallbackQuery is not null && update.CallbackQuery.Data is not null)
+            {
+                _logger.LogError(ex, "An exception occurred while processing a user callback. Callback: '{Data}'. {Error}",
+                    update.CallbackQuery.Data, ex.Message);
+            }
+            else
+            {
+                _logger.LogError(ex, "An exception occurred while processing a user request. {Error}", ex.Message);
+            }
         }
     }
 
