@@ -18,7 +18,7 @@ public static class NextComic
         _senderService = senderService;
     }
 
-    public static async Task SendAsync(User user, AnswerDictionary dictionary, CancellationToken cancellationToken)
+    public static async Task SendAsync(User user, AnswerDictionary dictionary, bool sendComicsOut, CancellationToken cancellationToken)
     {
         if (user.Settings.Sources == SourceType.None)
         {
@@ -36,7 +36,10 @@ public static class NextComic
 
             if (comic is null)
             {
-                _senderService.EnqueueMessage(new TextMessage(user.Id, dictionary.ComicsOut));
+                if (sendComicsOut is true)
+                {
+                    _senderService.EnqueueMessage(new TextMessage(user.Id, dictionary.ComicsOut));
+                }
                 return;
             }
         }
