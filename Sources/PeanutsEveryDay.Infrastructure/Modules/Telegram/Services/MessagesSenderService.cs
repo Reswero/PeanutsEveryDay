@@ -75,7 +75,7 @@ public class MessagesSenderService
             }
             catch (Exception ex)
             {
-                _logger.LogError("Exception occured while sending message. {Error}", ex.Message);
+                _logger.LogError(ex, "Exception occurred while sending message. {Error}", ex.Message);
             }
             finally
             {

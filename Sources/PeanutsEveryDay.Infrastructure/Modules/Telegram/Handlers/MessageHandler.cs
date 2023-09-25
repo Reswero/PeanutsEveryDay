@@ -73,7 +73,7 @@ public static class MessageHandler
         else if (message.Text == commandDictionary.NextComic ||
             message.Text == commandDictionary.Next)
         {
-            await NextComic.SendAsync(user, answerDictionary, cancellationToken);
+            await NextComic.SendAsync(user, answerDictionary, sendComicsOut: true, cancellationToken);
             await repository.UpdateAsync(user, cancellationToken);
         }
         else if (message.Text == commandDictionary.Menu ||

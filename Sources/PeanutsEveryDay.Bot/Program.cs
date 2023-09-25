@@ -18,6 +18,12 @@ internal class Program
         var loader = serviceProvider.GetRequiredService<IComicsLoaderService>();
         await loader.StartLoadingAsync();
 
-        Console.ReadLine();
+        while (true)
+        {
+            var command = Console.ReadLine();
+
+            if (command == "/quit")
+                Environment.Exit(0);
+        }
     }
 }

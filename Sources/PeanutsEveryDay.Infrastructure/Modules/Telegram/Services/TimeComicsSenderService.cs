@@ -53,7 +53,7 @@ public class TimeComicsSenderService
     private static TimeSpan NextDay()
     {
         DateTime now = DateTime.Now.Date;
-        var diff = now.AddDays(1).AddHours(10).AddMinutes(30) - now;
+        var diff = now.AddDays(1).AddHours(14).AddMinutes(30) - now;
         return diff;
     }
 
@@ -61,8 +61,8 @@ public class TimeComicsSenderService
     {
         _logger.LogInformation("Hourly sending started.");
 
-        await SendComics(PeriodType.EveryHour);
         _hourTimer.Interval = NextHour().TotalMilliseconds;
+        await SendComics(PeriodType.EveryHour);
 
         _logger.LogInformation("Hourly sending ended.");
     }
@@ -71,8 +71,8 @@ public class TimeComicsSenderService
     {
         _logger.LogInformation("Daily sending started.");
 
-        await SendComics(PeriodType.EveryDay);
         _dayTimer.Interval = NextDay().TotalMilliseconds;
+        await SendComics(PeriodType.EveryDay);
 
         _logger.LogInformation("Daily sending ended.");
     }
@@ -88,7 +88,7 @@ public class TimeComicsSenderService
         {
             var dictionary = scope.ServiceProvider.GetRequiredService<AnswerDictionaryResolver>().Invoke(user.Language);
 
-            await NextComic.SendAsync(user, dictionary, CancellationToken.None);
+            await NextComic.SendAsync(user, dictionary, sendComicsOut: false, CancellationToken.None);
             await repository.UpdateAsync(user, CancellationToken.None);
         }
     }
