@@ -16,8 +16,10 @@ internal class Program
         serviceProvider.InitializeMetrics();
         serviceProvider.InitializeTelegramBot();
 
+        CancellationTokenSource cts = new();
+
         var loader = serviceProvider.GetRequiredService<IComicsLoaderService>();
-        _ = Task.Run(async () => await loader.StartLoadingAsync());
+        _ = Task.Run(async () => await loader.StartLoadingAsync(cts.Token));
 
         while (true)
         {
@@ -25,7 +27,7 @@ internal class Program
 
             if (command == "/quit")
             {
-                await ConsoleCommands.ExecuteQuitCommand();
+                await ConsoleCommands.ExecuteQuitCommand(cts);
             }
             else if (command.StartsWith("/metrics"))
             {

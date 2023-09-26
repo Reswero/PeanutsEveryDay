@@ -45,7 +45,8 @@ public class ComicsLoaderService : IComicsLoaderService
 
         while (true)
         {
-            CancellationTokenSource cts = new(_loadingDuration);
+            CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(_loadingDuration);
 
             _logger.LogInformation("Comics loading started.");
 
