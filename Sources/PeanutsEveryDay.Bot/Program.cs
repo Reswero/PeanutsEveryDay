@@ -13,17 +13,24 @@ internal class Program
             .BuildServiceProvider();
 
         serviceProvider.InitializeDatabase();
+        serviceProvider.InitializeMetrics();
         serviceProvider.InitializeTelegramBot();
 
         var loader = serviceProvider.GetRequiredService<IComicsLoaderService>();
-        await loader.StartLoadingAsync();
+        _ = Task.Run(async () => await loader.StartLoadingAsync());
 
         while (true)
         {
-            var command = Console.ReadLine();
+            var command = Console.ReadLine() ?? string.Empty;
 
             if (command == "/quit")
-                Environment.Exit(0);
+            {
+                await ConsoleCommands.ExecuteQuitCommand();
+            }
+            else if (command.StartsWith("/metrics"))
+            {
+                await ConsoleCommands.ExecuteMetricsCommand(command);
+            }
         }
     }
 }

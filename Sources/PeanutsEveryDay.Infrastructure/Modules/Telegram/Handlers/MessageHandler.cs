@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using PeanutsEveryDay.Application.Modules.Repositories;
+using PeanutsEveryDay.Infrastructure.Modules.Metrics;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Messages;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Services;
@@ -57,6 +58,8 @@ public static class MessageHandler
         {
             user = Dom.User.Create(userId, message.From.FirstName, message.From.Username, message.From.LanguageCode);
             await repository.AddAsync(user, cancellationToken);
+
+            SimpleMetricsService.IncreaseUsers();
         }
 
         var commandDictionary = scope.ServiceProvider.GetRequiredService<CommandDictionaryResolver>().Invoke(user.Language);
