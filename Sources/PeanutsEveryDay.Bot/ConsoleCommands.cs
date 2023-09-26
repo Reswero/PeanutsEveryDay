@@ -4,8 +4,11 @@ namespace PeanutsEveryDay.Bot;
 
 public static class ConsoleCommands
 {
-    public static async Task ExecuteQuitCommand()
+    public static async Task ExecuteQuitCommand(CancellationTokenSource cts)
     {
+        cts.Cancel();
+        await Task.Delay(TimeSpan.FromSeconds(15));
+
         await SimpleMetricsService.SaveMetricAsync();
         Environment.Exit(0);
     }
