@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using PeanutsEveryDay.Application.Modules.Services;
 using PeanutsEveryDay.Infrastructure;
-using PeanutsEveryDay.Infrastructure.Modules.Metrics;
 
 namespace PeanutsEveryDay.Bot;
 
@@ -18,16 +17,19 @@ internal class Program
         serviceProvider.InitializeTelegramBot();
 
         var loader = serviceProvider.GetRequiredService<IComicsLoaderService>();
-        await loader.StartLoadingAsync();
+        _ = Task.Run(async () => await loader.StartLoadingAsync());
 
         while (true)
         {
-            var command = Console.ReadLine();
+            var command = Console.ReadLine() ?? string.Empty;
 
             if (command == "/quit")
             {
-                await SimpleMetricsService.SaveMetricAsync();
-                Environment.Exit(0);
+                await ConsoleCommands.ExecuteQuitCommand();
+            }
+            else if (command.StartsWith("/metrics"))
+            {
+                await ConsoleCommands.ExecuteMetricsCommand(command);
             }
         }
     }
