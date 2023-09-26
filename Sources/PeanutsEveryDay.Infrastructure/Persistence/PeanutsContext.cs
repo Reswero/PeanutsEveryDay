@@ -13,6 +13,7 @@ public class PeanutsContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<UserProgress> UsersProgress { get; set; }
     public DbSet<UserSettings> UsersSettings { get; set; }
+    public DbSet<Metric> Metrics { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -58,6 +59,14 @@ public class PeanutsContext : DbContext
              .WithOne(u => u.Settings)
              .HasForeignKey<UserSettings>(s => s.UserId)
              .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Metric>(m =>
+        {
+            m.HasKey(m => m.Date);
+            m.HasIndex(m => m.Date).IsUnique();
+
+            m.Property(m => m.Date).HasColumnType("date");
         });
     }
 }

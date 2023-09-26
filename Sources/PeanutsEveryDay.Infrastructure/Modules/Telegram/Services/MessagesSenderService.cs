@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using PeanutsEveryDay.Infrastructure.Modules.Metrics;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Messages;
 using PeanutsEveryDay.Infrastructure.Modules.Utils;
 using System.Collections.Concurrent;
@@ -93,6 +94,8 @@ public class MessagesSenderService
                 string caption = $"[{date}]({c.Comic.Url})";
                 InputFileStream inputFile = new(c.Comic.ImageStream, c.Comic.PublicationDate.ToShortDateString());
                 await _bot.SendPhotoAsync(c.UserId, inputFile, caption: caption, parseMode: ParseMode.Markdown);
+
+                SimpleMetricsService.IncreaseWatchedComics();
                 break;
             case EditMessage e:
                 await _bot.EditMessageTextAsync(e.UserId, e.MessageId, e.Text, replyMarkup: e.ReplyMarkup as InlineKeyboardMarkup,

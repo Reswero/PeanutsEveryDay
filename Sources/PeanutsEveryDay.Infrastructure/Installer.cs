@@ -8,6 +8,7 @@ using PeanutsEveryDay.Application.Modules.Parsers;
 using PeanutsEveryDay.Application.Modules.Repositories;
 using PeanutsEveryDay.Application.Modules.Services;
 using PeanutsEveryDay.Infrastructure.Modules.Converters;
+using PeanutsEveryDay.Infrastructure.Modules.Metrics;
 using PeanutsEveryDay.Infrastructure.Modules.Parsers;
 using PeanutsEveryDay.Infrastructure.Modules.Repositories;
 using PeanutsEveryDay.Infrastructure.Modules.Services;
@@ -100,6 +101,11 @@ public static class Installer
 
         var comicsSenderService = provider.GetRequiredService<TimeComicsSenderService>();
         comicsSenderService.Start();
+    }
+
+    public static void InitializeMetrics(this IServiceProvider provider)
+    {
+        SimpleMetricsService.Init(provider);
     }
 
     private static void InitializeHandlers(this IServiceProvider provider)

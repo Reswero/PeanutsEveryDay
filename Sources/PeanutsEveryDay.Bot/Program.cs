@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using PeanutsEveryDay.Application.Modules.Services;
 using PeanutsEveryDay.Infrastructure;
+using PeanutsEveryDay.Infrastructure.Modules.Metrics;
 
 namespace PeanutsEveryDay.Bot;
 
@@ -13,6 +14,7 @@ internal class Program
             .BuildServiceProvider();
 
         serviceProvider.InitializeDatabase();
+        serviceProvider.InitializeMetrics();
         serviceProvider.InitializeTelegramBot();
 
         var loader = serviceProvider.GetRequiredService<IComicsLoaderService>();
@@ -23,7 +25,10 @@ internal class Program
             var command = Console.ReadLine();
 
             if (command == "/quit")
+            {
+                await SimpleMetricsService.SaveMetricAsync();
                 Environment.Exit(0);
+            }
         }
     }
 }
