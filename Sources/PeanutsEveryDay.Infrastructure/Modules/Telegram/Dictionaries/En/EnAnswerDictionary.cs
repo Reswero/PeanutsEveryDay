@@ -8,6 +8,7 @@ public class EnAnswerDictionary : AnswerDictionary
         """
         Hi!
         I am a bot that will send you comics about Charlie Brown and his friends.
+        Comics are sent every hour or every day, depending on your settings.
 
         For information on available commands use:
         /help
