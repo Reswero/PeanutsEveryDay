@@ -4,10 +4,12 @@ namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.En;
 
 public class EnAnswerDictionary : AnswerDictionary
 {
+    public override string BotDescription { get; } = "I am a bot that will send you comics about Charlie Brown and his friends";
     public override string Greetings { get; } =
         """
         Hi!
         I am a bot that will send you comics about Charlie Brown and his friends.
+
         Comics are sent every hour or every day, depending on your settings.
 
         For information on available commands use:

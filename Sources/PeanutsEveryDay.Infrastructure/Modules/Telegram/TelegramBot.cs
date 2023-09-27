@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.Abstractions;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Handlers;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
@@ -26,6 +27,15 @@ public class TelegramBot : IUpdateHandler
     }
 
     public ITelegramBotClient Client { get; }
+
+    public async Task Init(Dictionary<string, AnswerDictionary> dictionaries)
+    {
+        await Client.SetMyDescriptionAsync(dictionaries["en"].BotDescription);
+        await Client.SetMyDescriptionAsync(dictionaries["ru"].BotDescription, "ru");
+
+        await Client.SetMyShortDescriptionAsync(dictionaries["en"].BotDescription);
+        await Client.SetMyShortDescriptionAsync(dictionaries["ru"].BotDescription, "ru");
+    }
 
     public async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken)
     {

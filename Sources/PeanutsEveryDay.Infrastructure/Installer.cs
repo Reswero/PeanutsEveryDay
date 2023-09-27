@@ -14,6 +14,7 @@ using PeanutsEveryDay.Infrastructure.Modules.Repositories;
 using PeanutsEveryDay.Infrastructure.Modules.Services;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Commands;
+using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.Abstractions;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.En;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.Ru;
 using PeanutsEveryDay.Infrastructure.Modules.Telegram.Handlers;
@@ -22,7 +23,6 @@ using PeanutsEveryDay.Infrastructure.Modules.Telegram.Utils;
 using PeanutsEveryDay.Infrastructure.Persistence;
 using Serilog;
 using Serilog.Events;
-
 namespace PeanutsEveryDay.Infrastructure;
 
 public static class Installer
@@ -95,7 +95,14 @@ public static class Installer
 
     public static void InitializeTelegramBot(this IServiceProvider provider)
     {
-        _ = provider.GetRequiredService<TelegramBot>();
+        var ru = provider.GetRequiredService<AnswerDictionaryResolver>().Invoke(LanguageCode.Ru);
+        var en = provider.GetRequiredService<AnswerDictionaryResolver>().Invoke(LanguageCode.En);
+
+        Dictionary<string, AnswerDictionary> dictionaries = new();
+        dictionaries["ru"] = ru;
+        dictionaries["en"] = en;
+
+        provider.GetRequiredService<TelegramBot>().Init(dictionaries);
         provider.InitializeHandlers();
         provider.InitializeCommands();
 

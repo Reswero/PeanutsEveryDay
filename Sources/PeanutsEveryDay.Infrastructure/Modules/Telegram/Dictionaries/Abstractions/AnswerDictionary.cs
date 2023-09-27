@@ -2,6 +2,7 @@
 
 public abstract class AnswerDictionary
 {
+    public abstract string BotDescription { get; }
     public abstract string Greetings { get; }
     public abstract string HelpInformation { get; }
     public abstract string KeyboardInstalled { get; }
