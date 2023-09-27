@@ -49,7 +49,7 @@ public class MessagesSenderService
         if (_messages.IsEmpty)
             return;
 
-        ConcurrentQueue<AbstractMessage> messagesToSend = _messages;
+        ConcurrentQueue<AbstractMessage> messagesToSend = new();
         while (!_messages.IsEmpty && messagesToSend.Count < _maxMessagesPerSending &&
             _messages.TryDequeue(out AbstractMessage message))
         {
