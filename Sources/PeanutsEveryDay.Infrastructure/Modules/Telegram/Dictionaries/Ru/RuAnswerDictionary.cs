@@ -4,10 +4,12 @@ namespace PeanutsEveryDay.Infrastructure.Modules.Telegram.Dictionaries.Ru;
 
 public class RuAnswerDictionary : AnswerDictionary
 {
+    public override string BotDescription { get; } = "Я бот, который будет присылать тебе комиксы про Чарли Брауна и его друзей";
     public override string Greetings { get; } =
         """
         Привет!
         Я бот, который будет присылать тебе комиксы про Чарли Брауна и его друзей.
+
         Комиксы отправляются каждый час или каждый день, в зависимости от выбранных настроек.
 
         На русский язык переведены не все комиксы, поэтому начиная с определенной даты комиксы будут на английском языке.
