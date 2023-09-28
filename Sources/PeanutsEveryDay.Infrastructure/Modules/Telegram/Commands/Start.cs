@@ -20,7 +20,5 @@ public class Start
     {
         var replyKeyboard = KeyboardHelper.CreateReplyKeyboard(commandDictionary);
         _senderService.EnqueueMessage(new TextMessage(user.Id, answerDictionary.Greetings, replyKeyboard));
-
-        await CommandMenu.SendAsync(user, cancellationToken);
     }
 }

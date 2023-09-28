@@ -95,14 +95,19 @@ public static class Installer
 
     public static void InitializeTelegramBot(this IServiceProvider provider)
     {
-        var ru = provider.GetRequiredService<AnswerDictionaryResolver>().Invoke(LanguageCode.Ru);
-        var en = provider.GetRequiredService<AnswerDictionaryResolver>().Invoke(LanguageCode.En);
+        Dictionary<string, AnswerDictionary> answers = new()
+        {
+            ["ru"] = provider.GetRequiredService<AnswerDictionaryResolver>().Invoke(LanguageCode.Ru),
+            ["en"] = provider.GetRequiredService<AnswerDictionaryResolver>().Invoke(LanguageCode.En)
+        };
 
-        Dictionary<string, AnswerDictionary> dictionaries = new();
-        dictionaries["ru"] = ru;
-        dictionaries["en"] = en;
+        Dictionary<string, CommandDictionary> commands = new()
+        {
+            ["ru"] = provider.GetRequiredService<CommandDictionaryResolver>().Invoke(LanguageCode.Ru),
+            ["en"] = provider.GetRequiredService<CommandDictionaryResolver>().Invoke(LanguageCode.En)
+        };
 
-        provider.GetRequiredService<TelegramBot>().Init(dictionaries);
+        provider.GetRequiredService<TelegramBot>().Init(answers, commands);
         provider.InitializeHandlers();
         provider.InitializeCommands();
 
@@ -129,7 +134,6 @@ public static class Installer
         var senderService = provider.GetRequiredService<MessagesSenderService>();
 
         ComicByDate.Init(comicsService, senderService);
-        CommandMenu.Init(senderService);
         HelpInfo.Init(senderService);
         KeyboardMenu.Init(senderService);
         MainMenu.Init(senderService);

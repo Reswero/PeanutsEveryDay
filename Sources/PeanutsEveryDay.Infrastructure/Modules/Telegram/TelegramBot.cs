@@ -28,13 +28,16 @@ public class TelegramBot : IUpdateHandler
 
     public ITelegramBotClient Client { get; }
 
-    public async Task Init(Dictionary<string, AnswerDictionary> dictionaries)
+    public async Task Init(Dictionary<string, AnswerDictionary> answers, Dictionary<string, CommandDictionary> commands)
     {
-        await Client.SetMyDescriptionAsync(dictionaries["en"].BotDescription);
-        await Client.SetMyDescriptionAsync(dictionaries["ru"].BotDescription, "ru");
+        await Client.SetMyDescriptionAsync(answers["en"].BotDescription);
+        await Client.SetMyDescriptionAsync(answers["ru"].BotDescription, "ru");
 
-        await Client.SetMyShortDescriptionAsync(dictionaries["en"].BotDescription);
-        await Client.SetMyShortDescriptionAsync(dictionaries["ru"].BotDescription, "ru");
+        await Client.SetMyShortDescriptionAsync(answers["en"].BotDescription);
+        await Client.SetMyShortDescriptionAsync(answers["ru"].BotDescription, "ru");
+
+        await Client.SetMyCommandsAsync(commands["en"].BotCommands, new BotCommandScopeAllPrivateChats());
+        await Client.SetMyCommandsAsync(commands["ru"].BotCommands, new BotCommandScopeAllPrivateChats(), "ru");
     }
 
     public async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken)
