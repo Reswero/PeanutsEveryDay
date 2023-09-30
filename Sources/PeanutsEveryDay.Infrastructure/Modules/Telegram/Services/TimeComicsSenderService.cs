@@ -52,8 +52,8 @@ public class TimeComicsSenderService
 
     private static TimeSpan NextDay()
     {
-        DateTime now = DateTime.Now.Date;
-        var diff = now.AddDays(1).AddHours(14).AddMinutes(30) - now;
+        DateTime now = DateTime.Now;
+        var diff = now.Date.AddDays(1).AddHours(14).AddMinutes(30) - now;
         return diff;
     }
 
